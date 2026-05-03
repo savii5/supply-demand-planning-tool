@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply & Demand Planning Tool</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f4;
+    --bg-tertiary: #eeede9;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --border: rgba(0,0,0,0.12);
+    --border-md: rgba(0,0,0,0.2);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+
+    --b50:#E6F1FB;--b400:#378ADD;--b600:#185FA5;--b800:#0C447C;
+    --t200:#5DCAA5;--t600:#0F6E56;
+    --a50:#FAEEDA;--a200:#EF9F27;--a600:#854F0B;--a800:#633806;
+    --r50:#FCEBEB;--r200:#F09595;--r600:#A32D2D;--r800:#791F1F;
+    --g50:#EAF3DE;--g200:#97C459;--g600:#3B6D11;--g800:#27500A;
+    --gr50:#F1EFE8;--gr600:#5F5E5A;--gr800:#444441;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1e1e1e;
+      --bg-secondary: #2a2a2a;
+      --bg-tertiary: #333;
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0a0a0;
+      --border: rgba(255,255,255,0.1);
+      --border-md: rgba(255,255,255,0.2);
+    }
+  }
+  body { font-family: var(--font); background: var(--bg-tertiary); color: var(--text-primary); min-height: 100vh; }
+  .shell { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+  /* HEADER */
+  .header { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { width: 28px; height: 28px; background: var(--b600); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 16px; height: 16px; fill: white; }
+  .logo-text { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .logo-sub { font-size: 12px; color: var(--text-secondary); }
+  .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .data-badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+  .badge-demo { background: var(--b50); color: var(--b800); }
+  .badge-excel { background: var(--g50); color: var(--g800); }
+  .upload-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 500; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; transition: background .15s; }
+  .upload-btn:hover { background: var(--bg-secondary); }
+  .btn-demo { padding: 7px 14px; font-size: 12.5px; font-weight: 500; border: 0.5px solid var(--border); border-radius: var(--radius-md); background: none; color: var(--text-secondary); cursor: pointer; transition: all .15s; }
+  .btn-demo:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+  /* NAV */
+  .nav-wrap { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1rem; padding: 0 1rem; overflow-x: auto; }
+  .nav { display: flex; gap: 0; border-bottom: none; }
+  .nav-btn { padding: 12px 16px; font-size: 13px; font-weight: 500; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: color .15s; }
+  .nav-btn.active { color: var(--text-primary); border-bottom-color: var(--b600); }
+  .nav-btn:hover:not(.active) { color: var(--text-primary); }
+
+  .tab { display: none; } .tab.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+  /* KPI GRIDS */
+  .kpi-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1rem; }
+  .kpi-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.125rem; position: relative; overflow: hidden; }
+  .kpi-accent { position: absolute; top: 0; left: 0; width: 3px; height: 100%; border-radius: 3px 0 0 3px; }
+  .kpi-lbl { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+  .kpi-val { font-size: 22px; font-weight: 600; color: var(--text-primary); line-height: 1.1; }
+  .kpi-sub { font-size: 11px; margin-top: 4px; }
+  .trend-up { color: var(--g600); } .trend-down { color: var(--r600); } .trend-neutral { color: var(--gr600); }
+
+  /* TABLES */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 500px; }
+  th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); padding: 7px 8px; border-bottom: 0.5px solid var(--border); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; background: var(--bg-secondary); }
+  td { padding: 8px 8px; border-bottom: 0.5px solid var(--border); color: var(--text-primary); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-secondary); }
+  .mono { font-family: var(--font-mono); font-size: 11.5px; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .b-red { background: var(--r50); color: var(--r800); }
+  .b-amber { background: var(--a50); color: var(--a800); }
+  .b-green { background: var(--g50); color: var(--g800); }
+  .b-blue { background: var(--b50); color: var(--b800); }
+  .b-gray { background: var(--gr50); color: var(--gr800); }
+
+  /* BARS */
+  .bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .bar-bg { flex: 1; height: 5px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; min-width: 60px; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+  .bar-num { font-size: 11.5px; color: var(--text-secondary); min-width: 40px; text-align: right; }
+
+  /* PROGRESS */
+  .prog-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .prog-label { font-size: 12px; color: var(--text-secondary); min-width: 110px; }
+  .prog-bg { flex: 1; height: 7px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+  .prog-pct { font-size: 12px; font-weight: 600; min-width: 36px; text-align: right; color: var(--text-primary); }
+
+  /* COL CHART */
+  .col-chart { height: 150px; display: flex; align-items: flex-end; gap: 4px; margin-bottom: 8px; }
+  .col-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .col-bars { display: flex; gap: 2px; align-items: flex-end; width: 100%; justify-content: center; }
+  .col-bar { width: 13px; border-radius: 2px 2px 0 0; min-height: 2px; transition: opacity .2s; cursor: pointer; }
+  .col-bar:hover { opacity: .75; }
+  .col-label { font-size: 10px; color: var(--text-secondary); margin-top: 5px; }
+  .chart-legend { display: flex; gap: 14px; }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+  .leg-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* RISK ITEMS */
+  .risk-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .risk-item:last-child { border-bottom: none; }
+  .risk-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .risk-body { flex: 1; min-width: 0; }
+  .risk-title { font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+  .risk-desc { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
+  .risk-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+
+  /* FORM */
+  .input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+  .field label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  input, select { width: 100%; padding: 7px 10px; font-size: 13px; border: 0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); outline: none; font-family: var(--font); }
+  input:focus, select:focus { border-color: var(--b600); box-shadow: 0 0 0 2px rgba(24,95,165,0.1); }
+
+  /* BUTTONS */
+  .btn-primary { padding: 8px 18px; font-size: 13px; font-weight: 600; background: var(--b600); color: white; border: none; border-radius: var(--radius-md); cursor: pointer; transition: background .15s; }
+  .btn-primary:hover { background: var(--b800); }
+  .btn-sec { padding: 7px 14px; font-size: 12.5px; font-weight: 500; background: none; color: var(--text-primary); border: 0.5px solid var(--border-md); border-radius: var(--radius-md); cursor: pointer; transition: background .15s; }
+  .btn-sec:hover { background: var(--bg-secondary); }
+  .btn-sm { padding: 4px 9px; font-size: 11px; border: 0.5px solid var(--border); border-radius: 4px; background: none; cursor: pointer; color: var(--text-secondary); transition: all .15s; }
+  .btn-sm:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 8px; flex-wrap: wrap; }
+
+  /* TIMELINE */
+  .tl-item { display: flex; gap: 12px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-date { font-size: 11.5px; color: var(--text-secondary); min-width: 82px; padding-top: 1px; }
+  .tl-body { flex: 1; }
+  .tl-title { font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+  .tl-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* UPLOAD DROP ZONE */
+  .drop-zone { border: 2px dashed var(--border-md); border-radius: var(--radius-lg); padding: 2.5rem 1.5rem; text-align: center; background: var(--bg-secondary); margin-bottom: 1.5rem; cursor: pointer; transition: border-color .2s, background .2s; }
+  .drop-zone:hover { border-color: var(--b600); background: var(--b50); }
+  .drop-zone p { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
+  .drop-zone strong { font-size: 14px; color: var(--text-primary); }
+
+  /* FILTER PILLS */
+  .filter-row { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filter-pill { padding: 5px 13px; font-size: 12px; border: 0.5px solid var(--border); border-radius: 20px; background: none; cursor: pointer; color: var(--text-secondary); transition: all .15s; }
+  .filter-pill.active { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 13px; }
+
+  /* FOOTER */
+  .footer { text-align: center; font-size: 11px; color: var(--text-secondary); padding: 1.5rem 0 .5rem; }
+
+  @media (max-width: 700px) {
+    .kpi-grid4 { grid-template-columns: 1fr 1fr; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .input-grid { grid-template-columns: 1fr 1fr; }
+    .shell { padding: 1rem; }
+  }
+  @media (max-width: 420px) {
+    .kpi-grid4 { grid-template-columns: 1fr; }
+    .input-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16"><path d="M2 12h12M2 8h9M2 4h6"/><rect x="11" y="6" width="3" height="6" rx="1"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">S&D Planning Tool</div>
+        <div class="logo-sub">Supply & Demand Planning</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span id="data-status" class="data-badge badge-demo">Demo data</span>
+      <label class="upload-btn" for="xlsx-input">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 5l3-3 3 3"/></svg>
+        Upload Excel
+      </label>
+      <input type="file" id="xlsx-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
+      <button class="btn-demo" onclick="loadDemo()">Reset demo</button>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav-wrap">
+    <div class="nav">
+      <button class="nav-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="switchTab('forecast')">Demand Forecast</button>
+      <button class="nav-btn" onclick="switchTab('inventory')">Inventory</button>
+      <button class="nav-btn" onclick="switchTab('suppliers')">Suppliers & Production</button>
+      <button class="nav-btn" onclick="switchTab('risks')">Risk Monitor</button>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div id="tab-dashboard" class="tab active">
+    <div class="kpi-grid4">
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--b600)"></div><div class="kpi-lbl">Forecast Accuracy</div><div class="kpi-val" id="d-accuracy">87.4%</div><div class="kpi-sub trend-up" id="d-accuracy-sub">▲ 2.1% vs last month</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:#1D9E75"></div><div class="kpi-lbl">Avg Stock Coverage</div><div class="kpi-val" id="d-coverage">—</div><div class="kpi-sub trend-neutral">Target: 30–45 days</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--r600)"></div><div class="kpi-lbl">At-Risk SKUs</div><div class="kpi-val" id="d-atrisk">—</div><div class="kpi-sub trend-down">Critical + Low stock</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--a200)"></div><div class="kpi-lbl">On-Time Delivery</div><div class="kpi-val">91.2%</div><div class="kpi-sub trend-down">▼ 1.4% vs 92.6% target</div></div>
+    </div>
+    <div class="kpi-grid4">
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--b400)"></div><div class="kpi-lbl">Total Stock (units)</div><div class="kpi-val" id="d-total-stock">—</div><div class="kpi-sub trend-neutral">Across all markets</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--r600)"></div><div class="kpi-lbl">Critical / Low SKUs</div><div class="kpi-val" id="d-low-skus">—</div><div class="kpi-sub trend-down">Require immediate action</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:#1D9E75"></div><div class="kpi-lbl">Open POs</div><div class="kpi-val" id="d-open-pos">—</div><div class="kpi-sub trend-neutral" id="d-po-sub">Units on order</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--gr600)"></div><div class="kpi-lbl">Excess SKUs</div><div class="kpi-val" id="d-excess">—</div><div class="kpi-sub trend-neutral">Coverage &gt; 60 days</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Demand vs Supply — Monthly</div>
+        <div class="col-chart" id="dash-chart"></div>
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--b600)"></div>Demand</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#1D9E75"></div>Supply</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Inventory health by market</div>
+        <div id="dash-market-health"></div>
+      </div>
+    </div>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-title">SKU status breakdown</div>
+        <div id="dash-sku-breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Supplier OTD performance</div>
+        <div id="dash-supplier-perf"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Top alerts</div>
+        <div id="dash-alerts"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Inventory snapshot</div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Stock</th><th>Days cover</th><th>ROP</th><th>Status</th></tr></thead>
+        <tbody id="dash-inv-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FORECAST ═══ -->
+  <div id="tab-forecast" class="tab">
+    <div class="section-hdr">
+      <span style="font-size:15px;font-weight:600">Demand Forecast Builder</span>
+      <button class="btn-primary" onclick="runForecast()">Run forecast</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Assumptions</div>
+      <div class="input-grid">
+        <div class="field"><label>Market</label><select id="fc-market"><option>EMEA</option><option>North America</option><option>APAC</option><option>LATAM</option><option>MEA</option></select></div>
+        <div class="field"><label>Category</label><select id="fc-cat"><option>Consumer Electronics</option><option>Accessories</option><option>Peripherals</option><option>Software</option></select></div>
+        <div class="field"><label>Horizon</label><select id="fc-horizon"><option>13 weeks</option><option>6 months</option><option>12 months</option></select></div>
+      </div>
+      <div class="input-grid">
+        <div class="field"><label>Base demand (units/wk)</label><input type="number" id="fc-base" value="1400"></div>
+        <div class="field"><label>Growth %</label><input type="number" id="fc-growth" value="8"></div>
+        <div class="field"><label>Seasonal index</label><input type="number" id="fc-seasonal" value="1.12" step="0.01"></div>
+      </div>
+      <div class="input-grid">
+        <div class="field"><label>Promo uplift %</label><input type="number" id="fc-promo" value="0"></div>
+        <div class="field"><label>Local team bias %</label><input type="number" id="fc-bias" value="5"></div>
+        <div class="field"><label>Confidence</label><select id="fc-conf"><option>90%</option><option>80%</option><option>70%</option></select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="fc-title">13-Week Demand Forecast</div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Week</th><th>Base</th><th>Adjusted</th><th>Low</th><th>High</th><th>Confidence</th><th>vs Prior Wk</th></tr></thead>
+        <tbody id="fc-body"></tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Imported forecast — by market (Excel)</div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Market</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>H2 Total</th></tr></thead>
+        <tbody id="fc-excel-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INVENTORY ═══ -->
+  <div id="tab-inventory" class="tab">
+    <div class="section-hdr">
+      <span style="font-size:15px;font-weight:600">Inventory Tracker</span>
+      <select id="inv-market-filter" style="font-size:12px;padding:6px 10px" onchange="renderInventory()">
+        <option value="all">All markets</option>
+        <option value="emea">EMEA</option>
+        <option value="north america">North America</option>
+        <option value="apac">APAC</option>
+        <option value="latam">LATAM</option>
+        <option value="mea">MEA</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <button class="filter-pill active" id="flt-all" onclick="setFilter('all',this)">All</button>
+      <button class="filter-pill" id="flt-critical" onclick="setFilter('critical',this)">Critical</button>
+      <button class="filter-pill" id="flt-low" onclick="setFilter('low',this)">Low stock</button>
+      <button class="filter-pill" id="flt-excess" onclick="setFilter('excess',this)">Excess</button>
+      <button class="filter-pill" id="flt-healthy" onclick="setFilter('healthy',this)">Healthy</button>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Stock (units)</th><th>Days cover</th><th>Reorder point</th><th>Weekly demand</th><th>Status</th></tr></thead>
+        <tbody id="inv-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SUPPLIERS ═══ -->
+  <div id="tab-suppliers" class="tab">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Production schedule</div>
+        <div id="prod-tl"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Supplier scorecard</div>
+        <div class="tbl-wrap">
+          <table><thead><tr><th>Supplier</th><th>Region</th><th>OTD %</th><th>Quality %</th><th>Lead time</th><th>Status</th></tr></thead>
+          <tbody id="sup-table"></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-hdr">
+        <div class="card-title" style="margin:0">Open purchase orders</div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>PO Number</th><th>Supplier</th><th>SKU</th><th>Product</th><th>Units</th><th>Order date</th><th>ETA</th><th>Status</th></tr></thead>
+        <tbody id="po-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RISKS ═══ -->
+  <div id="tab-risks" class="tab">
+    <div class="section-hdr">
+      <span style="font-size:15px;font-weight:600">Risk Monitor</span>
+    </div>
+    <div class="kpi-grid4" style="margin-bottom:1rem">
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--r600)"></div><div class="kpi-lbl">Critical</div><div class="kpi-val" style="color:var(--r600)">2</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--a200)"></div><div class="kpi-lbl">Moderate</div><div class="kpi-val" style="color:var(--a600)">4</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:var(--b400)"></div><div class="kpi-lbl">Monitoring</div><div class="kpi-val" style="color:var(--b600)">3</div></div>
+      <div class="kpi-card"><div class="kpi-accent" style="background:#1D9E75"></div><div class="kpi-lbl">Resolved (30d)</div><div class="kpi-val" style="color:var(--g600)">11</div></div>
+    </div>
+    <div class="card" id="risk-list"></div>
+  </div>
+
+  <div class="footer">Supply & Demand Planning Tool &nbsp;·&nbsp; Upload your Excel template to load live data</div>
+</div>
+
+<script>
+/* ── TABS ─────────────────────────────────────────────── */
+const TABS = ['dashboard','forecast','inventory','suppliers','risks'];
+function switchTab(t) {
+  TABS.forEach((x,i) => {
+    document.getElementById('tab-'+x).classList.remove('active');
+    document.querySelectorAll('.nav-btn')[i].classList.remove('active');
+  });
+  document.getElementById('tab-'+t).classList.add('active');
+  document.querySelectorAll('.nav-btn')[TABS.indexOf(t)].classList.add('active');
+}
+
+/* ── DEMO DATA ─────────────────────────────────────────── */
+const DEMO_INV = [
+  {sku:'SKU-2041',name:'Wireless Earbuds Pro',market:'LATAM',stock:320,days:5,rop:800,weekly:64,status:'Critical'},
+  {sku:'SKU-1892',name:'USB-C Hub 7-in-1',market:'APAC',stock:1100,days:12,rop:1500,weekly:92,status:'Low'},
+  {sku:'SKU-3317',name:'Smart Keyboard',market:'EMEA',stock:4200,days:38,rop:1000,weekly:111,status:'Healthy'},
+  {sku:'SKU-0994',name:'Laptop Stand',market:'North America',stock:8900,days:72,rop:2000,weekly:124,status:'Excess'},
+  {sku:'SKU-2210',name:'Webcam 4K',market:'EMEA',stock:650,days:14,rop:900,weekly:46,status:'Low'},
+  {sku:'SKU-4401',name:'Mechanical Mouse',market:'APAC',stock:2800,days:31,rop:1200,weekly:90,status:'Healthy'},
+  {sku:'SKU-1103',name:'Gaming Headset',market:'LATAM',stock:190,days:7,rop:500,weekly:27,status:'Critical'},
+  {sku:'SKU-3892',name:'Portable SSD 1TB',market:'North America',stock:3400,days:29,rop:1100,weekly:117,status:'Healthy'},
+  {sku:'SKU-5512',name:'Monitor 27-inch',market:'EMEA',stock:2100,days:24,rop:800,weekly:88,status:'Healthy'},
+  {sku:'SKU-6634',name:'Cable Organizer',market:'North America',stock:12000,days:88,rop:3000,weekly:136,status:'Excess'},
+];
+const DEMO_FC = [
+  {market:'EMEA',apr:7200,may:7600,jun:8800,jul:8400,aug:8100,sep:7900},
+  {market:'North America',apr:9100,may:9400,jun:10200,jul:11000,aug:10600,sep:9800},
+  {market:'APAC',apr:5400,may:5800,jun:6700,jul:7200,aug:7600,sep:8100},
+  {market:'LATAM',apr:2100,may:2300,jun:2600,jul:2900,aug:3100,sep:3400},
+  {market:'MEA',apr:1400,may:1500,jun:1700,jul:1900,aug:2000,sep:2200},
+];
+const DEMO_POS = [
+  {po:'PO-88412',supplier:'NORD-03',sku:'SKU-3317',product:'Smart Keyboard',units:2400,ordered:'Apr 28',eta:'May 8',status:'In Transit'},
+  {po:'PO-88491',supplier:'ASIA-07',sku:'SKU-2041',product:'Wireless Earbuds Pro',units:5000,ordered:'May 1',eta:'May 25',status:'Confirmed'},
+  {po:'PO-88502',supplier:'APAC-05',sku:'SKU-1892',product:'USB-C Hub 7-in-1',units:3200,ordered:'May 2',eta:'May 22',status:'Confirmed'},
+  {po:'PO-88399',supplier:'EMEA-12',sku:'SKU-2210',product:'Webcam 4K',units:1800,ordered:'Apr 21',eta:'May 5',status:'Delayed'},
+  {po:'PO-88517',supplier:'NORD-03',sku:'SKU-4401',product:'Mechanical Mouse',units:4000,ordered:'May 3',eta:'May 21',status:'Pending'},
+  {po:'PO-88530',supplier:'APAC-05',sku:'SKU-5512',product:'Monitor 27-inch',units:1200,ordered:'May 4',eta:'May 26',status:'Pending'},
+];
+const DEMO_SUPS = [
+  {id:'NORD-03',region:'EMEA',otd:96,quality:99.1,lead:18,status:'Preferred'},
+  {id:'ASIA-07',region:'APAC',otd:88,quality:97.4,lead:24,status:'Active'},
+  {id:'EMEA-12',region:'EMEA',otd:79,quality:98.8,lead:14,status:'Watch'},
+  {id:'LATAM-02',region:'LATAM',otd:71,quality:96.1,lead:31,status:'At Risk'},
+  {id:'APAC-05',region:'APAC',otd:93,quality:99.5,lead:20,status:'Preferred'},
+];
+
+/* ── STATE ─────────────────────────────────────────────── */
+let state = { inventory:[], forecast:[], pos:[], suppliers:[] };
+
+function loadDemo() {
+  state = { inventory:[...DEMO_INV], forecast:[...DEMO_FC], pos:[...DEMO_POS], suppliers:[...DEMO_SUPS] };
+  document.getElementById('data-status').textContent = 'Demo data';
+  document.getElementById('data-status').className = 'data-badge badge-demo';
+  renderAll();
+}
+
+/* ── EXCEL UPLOAD ──────────────────────────────────────── */
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type:'binary'});
+      const parsed = { inventory:[], forecast:[], pos:[], suppliers:[] };
+      wb.SheetNames.forEach(name => {
+        const ws = wb.Sheets[name];
+        const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+        const nl = name.toLowerCase();
+        if (nl.includes('inventory')) {
+          parsed.inventory = rows.map(r => ({
+            sku: r['SKU']||r['sku']||'',
+            name: r['Product Name']||r['Product']||r['name']||'',
+            market: r['Market']||r['market']||'',
+            stock: +r['Stock (Units)']||+r['Stock']||+r['stock']||0,
+            days: +r['Days Cover']||+r['Days']||+r['days']||0,
+            rop: +r['Reorder Point']||+r['ROP']||+r['rop']||0,
+            weekly: +r['Weekly Demand']||+r['weekly']||0,
+            status: r['Status']||r['status']||'Healthy'
+          }));
+        } else if (nl.includes('forecast')||nl.includes('demand')) {
+          parsed.forecast = rows.map(r => ({
+            market: r['Market']||r['market']||'',
+            apr:+r['Apr']||0, may:+r['May']||0, jun:+r['Jun']||0,
+            jul:+r['Jul']||0, aug:+r['Aug']||0, sep:+r['Sep']||0
+          })).filter(r => r.market && r.market !== 'TOTAL');
+        } else if (nl.includes('purchase')||nl.includes('po')||nl.includes('order')) {
+          parsed.pos = rows.map(r => ({
+            po: r['PO Number']||r['PO']||'',
+            supplier: r['Supplier']||'',
+            sku: r['SKU']||r['sku']||'',
+            product: r['Product']||'',
+            units: +r['Units']||0,
+            ordered: r['Order Date']||r['Ordered']||'',
+            eta: r['ETA']||'',
+            status: r['Status']||'Pending'
+          }));
+        } else if (nl.includes('supplier')) {
+          parsed.suppliers = rows.map(r => ({
+            id: r['Supplier ID']||r['Supplier']||'',
+            region: r['Region']||'',
+            otd: +r['OTD %']||+r['OTD']||0,
+            quality: +r['Quality %']||+r['Quality']||0,
+            lead: +r['Lead Time (days)']||+r['Lead Time']||0,
+            status: r['Status']||''
+          }));
+        }
+      });
+      if (!parsed.inventory.length) parsed.inventory = [...DEMO_INV];
+      if (!parsed.forecast.length) parsed.forecast = [...DEMO_FC];
+      if (!parsed.pos.length) parsed.pos = [...DEMO_POS];
+      if (!parsed.suppliers.length) parsed.suppliers = [...DEMO_SUPS];
+      state = parsed;
+      document.getElementById('data-status').textContent = '✓ ' + file.name;
+      document.getElementById('data-status').className = 'data-badge badge-excel';
+      renderAll();
+    } catch(err) {
+      alert('Could not parse file. Please use the provided Excel template.');
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+/* ── RENDER ALL ───────────────────────────────────────── */
+function renderAll() {
+  renderDashboard();
+  renderInventory();
+  renderSuppliers();
+  renderPOs();
+  renderTimeline();
+  renderRisks();
+  renderFcExcel();
+  runForecast();
+}
+
+/* ── STATUS STYLE ─────────────────────────────────────── */
+function statusStyle(s) {
+  const map = {
+    Critical: {bc:'b-red', label:'Critical'},
+    Low: {bc:'b-amber', label:'Low'},
+    Healthy: {bc:'b-green', label:'Healthy'},
+    Excess: {bc:'b-blue', label:'Excess'}
+  };
+  return map[s] || {bc:'b-gray', label: s};
+}
+function barColor(s) {
+  return s==='Critical'?'var(--r600)':s==='Low'?'var(--a200)':s==='Excess'?'var(--b600)':'#1D9E75';
+}
+
+/* ── DASHBOARD ────────────────────────────────────────── */
+function renderDashboard() {
+  const inv = state.inventory;
+  const totalStock = inv.reduce((s,i) => s+i.stock, 0);
+  const atRisk = inv.filter(i => i.status==='Critical'||i.status==='Low').length;
+  const excess = inv.filter(i => i.status==='Excess').length;
+  const avgDays = inv.length ? Math.round(inv.reduce((s,i) => s+i.days, 0)/inv.length) : 0;
+  const totalPOUnits = state.pos.reduce((s,p) => s+p.units, 0);
+
+  document.getElementById('d-total-stock').textContent = totalStock.toLocaleString();
+  document.getElementById('d-atrisk').textContent = atRisk;
+  document.getElementById('d-excess').textContent = excess;
+  document.getElementById('d-coverage').textContent = avgDays + ' days';
+  document.getElementById('d-open-pos').textContent = state.pos.length;
+  document.getElementById('d-po-sub').textContent = totalPOUnits.toLocaleString() + ' units on order';
+  document.getElementById('d-low-skus').textContent = atRisk;
+
+  // Column chart
+  const months = ['Apr','May','Jun','Jul','Aug','Sep'];
+  const keys = ['apr','may','jun','jul','aug','sep'];
+  const demand = state.forecast.length
+    ? keys.map(k => state.forecast.reduce((s,r) => s+(r[k]||0), 0))
+    : [6200,7100,6800,7600,8200,8800];
+  const supply = demand.map(d => Math.round(d * (0.9 + (Math.sin(d)*0.05))));
+  const maxV = Math.max(...demand, ...supply, 1);
+  document.getElementById('dash-chart').innerHTML = months.map((m,i) => {
+    const dh = Math.round((demand[i]/maxV)*130);
+    const sh = Math.round((supply[i]/maxV)*130);
+    return `<div class="col-group">
+      <div class="col-bars">
+        <div class="col-bar" style="height:${dh}px;background:var(--b600)" title="${m} Demand: ${demand[i].toLocaleString()}"></div>
+        <div class="col-bar" style="height:${sh}px;background:#1D9E75" title="${m} Supply: ${supply[i].toLocaleString()}"></div>
+      </div>
+      <div class="col-label">${m}</div>
+    </div>`;
+  }).join('');
+
+  // Market health
+  const markets = ['EMEA','North America','APAC','LATAM','MEA'];
+  const mColors = ['var(--b600)','#1D9E75','var(--a200)','var(--r600)','var(--b400)'];
+  const mHealth = markets.map(m => {
+    const mInv = inv.filter(i => i.market === m);
+    if (!mInv.length) return 60;
+    return Math.min(100, Math.round(mInv.reduce((s,i) => s + Math.min(100,(i.days/45)*100), 0) / mInv.length));
+  });
+  document.getElementById('dash-market-health').innerHTML = markets.map((m,i) =>
+    `<div class="prog-row">
+      <div class="prog-label">${m}</div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${mHealth[i]}%;background:${mColors[i]}"></div></div>
+      <div class="prog-pct">${mHealth[i]}%</div>
+    </div>`
+  ).join('');
+
+  // SKU breakdown
+  const statuses = ['Healthy','Low','Critical','Excess'];
+  const sColors = ['#1D9E75','var(--a200)','var(--r600)','var(--b600)'];
+  const sCounts = statuses.map(s => inv.filter(i => i.status===s).length);
+  const maxS = Math.max(...sCounts, 1);
+  document.getElementById('dash-sku-breakdown').innerHTML = statuses.map((s,i) =>
+    `<div class="prog-row">
+      <div class="prog-label" style="font-size:12px">${s}</div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${Math.round((sCounts[i]/maxS)*100)}%;background:${sColors[i]}"></div></div>
+      <div class="prog-pct">${sCounts[i]}</div>
+    </div>`
+  ).join('');
+
+  // Supplier OTD
+  document.getElementById('dash-supplier-perf').innerHTML = state.suppliers.map(s => {
+    const col = s.otd>=90?'#1D9E75':s.otd>=80?'var(--a200)':'var(--r600)';
+    return `<div class="prog-row">
+      <div class="prog-label" style="font-size:12px">${s.id}</div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${s.otd}%;background:${col}"></div></div>
+      <div class="prog-pct">${s.otd}%</div>
+    </div>`;
+  }).join('');
+
+  // Alerts
+  const critical = inv.filter(i => i.status==='Critical');
+  const delayed = state.pos.filter(p => p.status==='Delayed');
+  let alerts = [];
+  critical.forEach(i => alerts.push({bg:'var(--r50)',icon:'⚠',text:`Stockout risk: ${i.sku} (${i.market}) — ${i.days}d remaining`,bc:'b-red',label:'Critical'}));
+  delayed.forEach(p => alerts.push({bg:'var(--a50)',icon:'↗',text:`Delayed PO: ${p.po} — ${p.product}`,bc:'b-amber',label:'Delayed'}));
+  if (!alerts.length) alerts.push({bg:'var(--g50)',icon:'✓',text:'No critical alerts — all systems healthy',bc:'b-green',label:'Clear'});
+  document.getElementById('dash-alerts').innerHTML = alerts.slice(0,4).map(a =>
+    `<div class="risk-item">
+      <div class="risk-icon" style="background:${a.bg}">${a.icon}</div>
+      <div class="risk-body"><div class="risk-title" style="font-size:12px">${a.text}</div></div>
+      <span class="badge ${a.bc}" style="flex-shrink:0">${a.label}</span>
+    </div>`
+  ).join('');
+
+  // Snapshot table
+  document.getElementById('dash-inv-table').innerHTML = inv.map(i => {
+    const {bc,label} = statusStyle(i.status);
+    const pct = Math.min(100, Math.round((i.days/60)*100));
+    return `<tr>
+      <td class="mono">${i.sku}</td><td>${i.name}</td><td>${i.market}</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(i.status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
+      <td>${i.days}</td><td>${i.rop.toLocaleString()}</td>
+      <td><span class="badge ${bc}">${label}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── INVENTORY ─────────────────────────────────────────── */
+let invFilter = 'all';
+function setFilter(f, btn) {
+  invFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderInventory();
+}
+function renderInventory() {
+  const mkt = (document.getElementById('inv-market-filter')||{}).value || 'all';
+  const rows = state.inventory.filter(i => {
+    const mMatch = mkt==='all' || i.market.toLowerCase().includes(mkt);
+    const fMatch = invFilter==='all' || i.status.toLowerCase()===invFilter;
+    return mMatch && fMatch;
+  });
+  if (!rows.length) {
+    document.getElementById('inv-body').innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);padding:1.5rem">No SKUs match current filters</td></tr>';
+    return;
+  }
+  document.getElementById('inv-body').innerHTML = rows.map(i => {
+    const {bc,label} = statusStyle(i.status);
+    const pct = Math.min(100, Math.round((i.days/60)*100));
+    return `<tr>
+      <td class="mono">${i.sku}</td><td>${i.name}</td><td>${i.market}</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(i.status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
+      <td>${i.days}</td><td>${i.rop.toLocaleString()}</td><td>${i.weekly||'—'}</td>
+      <td><span class="badge ${bc}">${label}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── SUPPLIERS ─────────────────────────────────────────── */
+function supStyle(s) { return s==='Preferred'?'b-green':s==='Active'?'b-blue':s==='Watch'?'b-amber':'b-red'; }
+function renderSuppliers() {
+  document.getElementById('sup-table').innerHTML = state.suppliers.map(s =>
+    `<tr><td>${s.id}</td><td>${s.region}</td><td>${s.otd}%</td><td>${s.quality}%</td><td>${s.lead}d</td><td><span class="badge ${supStyle(s.status)}">${s.status}</span></td></tr>`
+  ).join('');
+}
+function poStyle(s) { return s==='In Transit'?'b-blue':s==='Confirmed'?'b-green':s==='Delayed'?'b-red':'b-gray'; }
+function renderPOs() {
+  document.getElementById('po-body').innerHTML = state.pos.map(p =>
+    `<tr><td class="mono">${p.po}</td><td>${p.supplier}</td><td class="mono">${p.sku}</td><td>${p.product}</td><td>${p.units.toLocaleString()}</td><td>${p.ordered}</td><td>${p.eta}</td><td><span class="badge ${poStyle(p.status)}">${p.status}</span></td></tr>`
+  ).join('');
+}
+function renderTimeline() {
+  const items = [
+    {date:'May 5–6',title:'Run #A-214 — Smart Keyboard',sub:'EMEA batch, 3,000 units — NORD-03 facility'},
+    {date:'May 8',title:'Inbound delivery — NORD-03',sub:'2,400 units SKU-3317 → EMEA warehouse'},
+    {date:'May 10–12',title:'Run #A-215 — Wireless Earbuds Pro',sub:'LATAM batch, 5,000 units — ASIA-07'},
+    {date:'May 14',title:'Replenishment review — APAC Q3',sub:'Align with revised demand signal (+12%)'},
+    {date:'May 22–24',title:'Run #A-216 — USB-C Hub 7-in-1',sub:'APAC batch, 3,200 units — APAC-05'},
+  ];
+  document.getElementById('prod-tl').innerHTML = items.map(t =>
+    `<div class="tl-item"><div class="tl-date">${t.date}</div><div class="tl-body"><div class="tl-title">${t.title}</div><div class="tl-sub">${t.sub}</div></div></div>`
+  ).join('');
+}
+
+/* ── RISKS ─────────────────────────────────────────────── */
+function renderRisks() {
+  const risks = [
+    {icon:'⚠',bg:'var(--r50)',title:'Stockout — SKU-2041 LATAM (5 days remaining)',desc:'Demand exceeded forecast by 34%. Expedited air freight from ASIA-07 recommended. Est. cost: $8,400.',bc:'b-red',label:'Critical',action:'Build expedite plan'},
+    {icon:'⚠',bg:'var(--r50)',title:'Supplier EMEA-12 — delayed PO-88399',desc:'Delivery delayed 3 days. 1,800 units of SKU-2210 arriving May 5 instead of May 2. Buffer covers gap.',bc:'b-red',label:'Critical',action:'Review buffer stock'},
+    {icon:'↗',bg:'var(--a50)',title:'APAC demand revision +12% — production misalignment',desc:'Local team confirmed Q3 campaign. Current schedule undersupplied by ~1,800 units.',bc:'b-amber',label:'Moderate',action:'Adjust Run #A-216'},
+    {icon:'↗',bg:'var(--a50)',title:'Excess inventory — SKU-0994 North America (72 days)',desc:'Forecast overestimated demand. Recommend inter-market reallocation or promotional push.',bc:'b-amber',label:'Moderate',action:'Reallocation plan'},
+    {icon:'↗',bg:'var(--a50)',title:'LATAM-02 lead time extended to 31 days',desc:'Average lead time extended from 24 to 31 days. Reorder point calculations need updating.',bc:'b-amber',label:'Moderate',action:'Update ROP'},
+    {icon:'↗',bg:'var(--a50)',title:'APAC inventory below 50% health for 3 SKUs',desc:'Coverage trending down as Q3 promo approaches. Additional production run required in May.',bc:'b-amber',label:'Moderate',action:'Plan top-up run'},
+    {icon:'ℹ',bg:'var(--b50)',title:'Seasonal uplift expected — EMEA June (+18%)',desc:'Historical pattern confirmed. Forecast model auto-adjusted. Pending local team sign-off.',bc:'b-blue',label:'Monitor',action:'Confirm forecast'},
+    {icon:'ℹ',bg:'var(--b50)',title:'Currency risk — BRL/USD affecting LATAM landed costs',desc:'BRL/USD movement may affect landed cost by 4–7%. Watch margin on upcoming LATAM POs.',bc:'b-blue',label:'Monitor',action:'Review pricing'},
+    {icon:'ℹ',bg:'var(--b50)',title:'New supplier qualification — MEA region',desc:'NORD-03 MEA facility qualification underway. Expected to reduce lead times from 28 to 17 days.',bc:'b-blue',label:'Monitor',action:'Track progress'},
+  ];
+  document.getElementById('risk-list').innerHTML = risks.map(r =>
+    `<div class="risk-item">
+      <div class="risk-icon" style="background:${r.bg}">${r.icon}</div>
+      <div class="risk-body"><div class="risk-title">${r.title}</div><div class="risk-desc">${r.desc}</div></div>
+      <div class="risk-right"><span class="badge ${r.bc}">${r.label}</span></div>
+    </div>`
+  ).join('');
+}
+
+/* ── FORECAST ──────────────────────────────────────────── */
+function runForecast() {
+  const base = parseInt(document.getElementById('fc-base').value)||1400;
+  const growth = parseFloat(document.getElementById('fc-growth').value)||8;
+  const seasonal = parseFloat(document.getElementById('fc-seasonal').value)||1;
+  const promo = parseFloat(document.getElementById('fc-promo').value)||0;
+  const bias = parseFloat(document.getElementById('fc-bias').value)||0;
+  const mkt = document.getElementById('fc-market').value;
+  const cat = document.getElementById('fc-cat').value;
+  document.getElementById('fc-title').textContent = `13-Week Demand Forecast — ${mkt}, ${cat}`;
+  let prev = 0;
+  document.getElementById('fc-body').innerHTML = Array.from({length:13}, (_,wi) => {
+    const w = wi+1;
+    const gMult = 1 + (growth/100)*(w/52);
+    const adj = Math.round(base * gMult * seasonal * (1+(promo/100)) * (1+(bias/100)));
+    const low = Math.round(adj * .85);
+    const high = Math.round(adj * 1.15);
+    const conf = w<=4?'90%':w<=8?'80%':'70%';
+    const chg = prev ? ((adj-prev)/prev*100).toFixed(1)+'%' : '—';
+    const chgStyle = prev&&adj>prev?'color:var(--g600)':prev&&adj<prev?'color:var(--r600)':'';
+    prev = adj;
+    return `<tr>
+      <td>W${w}</td><td>${base.toLocaleString()}</td><td>${adj.toLocaleString()}</td>
+      <td>${low.toLocaleString()}</td><td>${high.toLocaleString()}</td>
+      <td><span class="badge b-blue">${conf}</span></td>
+      <td style="${chgStyle};font-size:12px">${chg}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFcExcel() {
+  const body = document.getElementById('fc-excel-body');
+  if (!state.forecast.length) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">Upload your Excel file to see imported forecast data here</td></tr>';
+    return;
+  }
+  const total = {apr:0,may:0,jun:0,jul:0,aug:0,sep:0};
+  const rows = state.forecast.map(r => {
+    const tot = r.apr+r.may+r.jun+r.jul+r.aug+r.sep;
+    ['apr','may','jun','jul','aug','sep'].forEach(k => total[k] += r[k]||0);
+    return `<tr>
+      <td>${r.market}</td>
+      <td>${(r.apr||0).toLocaleString()}</td><td>${(r.may||0).toLocaleString()}</td>
+      <td>${(r.jun||0).toLocaleString()}</td><td>${(r.jul||0).toLocaleString()}</td>
+      <td>${(r.aug||0).toLocaleString()}</td><td>${(r.sep||0).toLocaleString()}</td>
+      <td style="font-weight:600">${tot.toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+  const grandTotal = Object.values(total).reduce((s,v)=>s+v,0);
+  body.innerHTML = rows + `<tr style="font-weight:600;background:var(--bg-secondary)">
+    <td>TOTAL</td>
+    ${['apr','may','jun','jul','aug','sep'].map(k=>`<td>${total[k].toLocaleString()}</td>`).join('')}
+    <td>${grandTotal.toLocaleString()}</td>
+  </tr>`;
+}
+
+/* ── INIT ─────────────────────────────────────────────── */
+loadDemo();
+document.getElementById('fc-base').addEventListener('input', runForecast);
+document.getElementById('fc-growth').addEventListener('input', runForecast);
+document.getElementById('fc-seasonal').addEventListener('input', runForecast);
+document.getElementById('fc-promo').addEventListener('input', runForecast);
+document.getElementById('fc-bias').addEventListener('input', runForecast);
+document.getElementById('fc-market').addEventListener('change', runForecast);
+document.getElementById('fc-cat').addEventListener('change', runForecast);
+document.getElementById('fc-horizon').addEventListener('change', runForecast);
+</script>
+</body>
+</html>
