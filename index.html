@@ -4,10 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>S&D Planning — Statistical Engine</title>
+<!-- FIX #1: Google Fonts moved to <link> tags (was @import after CSS rules = invalid, silently ignored) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 :root{
   --bg:#0D0F14;--bg2:#13161E;--bg3:#1A1E28;--bg4:#222638;
   --border:#2A2F42;--border2:#363D55;
@@ -46,10 +49,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .btn-ghost:hover{color:var(--text);border-color:var(--border2)}
 
 /* ── NAV ── */
+/* FIX #11: keyboard nav support via tabindex + focus styles */
 .nav-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:1.5rem;padding:4px;display:flex;gap:2px;overflow-x:auto}
 .nav-btn{padding:8px 16px;font-size:12px;font-weight:500;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:8px;white-space:nowrap;transition:all .2s;font-family:var(--font)}
 .nav-btn.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .nav-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.04)}
+.nav-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
 .tab{display:none}.tab.active{display:block}
 
@@ -114,7 +119,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);font-family:var(--font-mono)}
 .leg-dot{width:8px;height:8px;border-radius:2px}
 
-/* ── STAT CHART (line-ish using SVG) ── */
+/* ── STAT CHART ── */
+/* FIX #12: use xMidYMid meet for non-distorting responsive charts */
 .stat-chart{width:100%;height:120px}
 
 /* ── FORM ── */
@@ -127,10 +133,14 @@ select option{background:var(--bg3)}
 /* ── BUTTONS ── */
 .btn-primary{padding:8px 18px;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--blue2),var(--blue3));color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .2s;letter-spacing:.02em}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .btn-sec{padding:8px 14px;font-size:12px;font-weight:500;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .2s}
 .btn-sec:hover{color:var(--text);border-color:var(--border2)}
 .btn-sm{padding:4px 10px;font-size:10px;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
 .btn-sm:hover{color:var(--text);border-color:var(--border2);background:var(--bg3)}
+.btn-export{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;font-size:11px;font-weight:500;background:rgba(34,211,164,.1);color:var(--teal);border:1px solid rgba(34,211,164,.25);border-radius:var(--r);cursor:pointer;font-family:var(--font-mono);transition:all .2s}
+.btn-export:hover{background:rgba(34,211,164,.18);border-color:var(--teal)}
+.btn-export:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px;flex-wrap:wrap}
 
 /* ── RISK ── */
@@ -151,16 +161,21 @@ select option{background:var(--bg3)}
 .tl-sub{font-size:11px;color:var(--text2);margin-top:2px}
 
 /* ── STAT MODEL UI ── */
+/* FIX #11: keyboard nav for model tabs */
 .model-tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
 .model-tab{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
 .model-tab.active{background:rgba(79,142,247,.12);color:var(--blue);border-color:rgba(79,142,247,.3)}
 .model-tab:hover:not(.active){color:var(--text2);border-color:var(--border2)}
+.model-tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .model-panel{display:none}.model-panel.active{display:block}
 
 .formula-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.875rem;margin-bottom:1rem;font-family:var(--font-mono);font-size:11px;color:var(--text2);line-height:1.7}
 .formula-box .formula-title{color:var(--blue);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .formula-highlight{color:var(--teal)}
 .formula-comment{color:var(--text3)}
+
+/* FIX #3: disclaimer style for ARIMA/SARIMA */
+.model-disclaimer{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);margin-bottom:1rem;font-size:11px;color:var(--amber);font-family:var(--font-mono);line-height:1.5}
 
 .stat-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
 .stat-result{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.75rem}
@@ -172,17 +187,20 @@ select option{background:var(--bg3)}
 .filter-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
 .filter-pill{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
 .filter-pill.active{background:rgba(79,142,247,.12);color:var(--blue);border-color:rgba(79,142,247,.3)}
+.filter-pill:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
 /* ── SVG CHART ── */
 .line-chart-wrap{width:100%;overflow:hidden;border-radius:var(--r)}
-
-/* ── CONFIDENCE BAND ── */
 .conf-high{fill:rgba(79,142,247,.08)}
 .conf-line{stroke:var(--blue);stroke-width:2;fill:none}
 .forecast-line{stroke:var(--teal);stroke-width:2;fill:none;stroke-dasharray:5,3}
 .actual-dot{fill:var(--blue)}
 .grid-line{stroke:var(--border);stroke-width:0.5}
 .axis-label{fill:var(--text3);font-size:9px;font-family:'DM Mono',monospace}
+
+/* FIX #10: Forecast chart container */
+.fc-chart-wrap{width:100%;height:160px;margin-bottom:1rem}
+.fc-chart-wrap svg{width:100%;height:100%}
 
 /* ── EOQ / SAFETY STOCK CARDS ── */
 .eoq-result{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(34,211,164,.06));border:1px solid rgba(79,142,247,.2);border-radius:var(--r2);padding:1.25rem;margin-bottom:1rem}
@@ -201,6 +219,10 @@ select option{background:var(--bg3)}
 .model-comparison .best{color:var(--teal);font-weight:600}
 .model-comparison tr.winner{background:rgba(34,211,164,.04)}
 
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;color:var(--text3);padding:2rem;font-size:12px;font-family:var(--font-mono)}
+.empty-state-icon{font-size:28px;margin-bottom:8px;opacity:.5}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg2)}
@@ -208,6 +230,9 @@ select option{background:var(--bg3)}
 
 /* ── FOOTER ── */
 .footer{text-align:center;font-size:10px;color:var(--text3);padding:2rem 0 .5rem;font-family:var(--font-mono);letter-spacing:.04em}
+
+/* ── HW warning ── */
+.hw-warn{display:none;padding:8px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);margin-bottom:1rem;font-size:11px;color:var(--amber);font-family:var(--font-mono)}
 
 @media(max-width:700px){
   .kpi-grid{grid-template-columns:1fr 1fr}
@@ -231,30 +256,30 @@ select option{background:var(--bg3)}
     </div>
   </div>
   <div class="header-right">
-    <span id="data-status" class="pill pill-amber">DEMO DATA</span>
+    <span id="data-status" class="pill pill-amber">NO DATA</span>
     <label class="upload-btn" for="xlsx-input">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 5l3-3 3 3"/></svg>
       Upload Excel
     </label>
     <input type="file" id="xlsx-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
     <button class="btn-ghost" onclick="loadDemo()">Load Demo</button>
-<button class="btn-ghost" onclick="location.reload()">Reset</button>
+    <button class="btn-ghost" onclick="location.reload()">Reset</button>
   </div>
 </div>
 
-<!-- NAV -->
-<div class="nav-wrap">
-  <button class="nav-btn active" onclick="switchTab('dashboard')">Dashboard</button>
-  <button class="nav-btn" onclick="switchTab('statistical')">📈 Statistical Models</button>
-  <button class="nav-btn" onclick="switchTab('eoq')">⚙️ EOQ & Safety Stock</button>
-  <button class="nav-btn" onclick="switchTab('forecast')">Demand Forecast</button>
-  <button class="nav-btn" onclick="switchTab('inventory')">Inventory</button>
-  <button class="nav-btn" onclick="switchTab('suppliers')">Suppliers</button>
-  <button class="nav-btn" onclick="switchTab('risks')">Risk Monitor</button>
+<!-- NAV: FIX #11 - tabindex and keyboard navigation -->
+<div class="nav-wrap" role="tablist" aria-label="Main navigation">
+  <button class="nav-btn active" role="tab" aria-selected="true" tabindex="0" onclick="switchTab('dashboard')" onkeydown="navKeydown(event,0)">Dashboard</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('statistical')" onkeydown="navKeydown(event,1)">📈 Statistical Models</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('eoq')" onkeydown="navKeydown(event,2)">⚙️ EOQ & Safety Stock</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('forecast')" onkeydown="navKeydown(event,3)">Demand Forecast</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('inventory')" onkeydown="navKeydown(event,4)">Inventory</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('suppliers')" onkeydown="navKeydown(event,5)">Suppliers</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('risks')" onkeydown="navKeydown(event,6)">Risk Monitor</button>
 </div>
 
 <!-- ═══════════ DASHBOARD ═══════════ -->
-<div id="tab-dashboard" class="tab active">
+<div id="tab-dashboard" class="tab active" role="tabpanel">
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-glow" style="background:var(--blue)"></div><div class="kpi-lbl">Forecast Accuracy</div><div class="kpi-val" id="d-accuracy">87.4%</div><div class="kpi-sub kpi-up">▲ 2.1% vs last month</div></div>
     <div class="kpi"><div class="kpi-glow" style="background:var(--teal)"></div><div class="kpi-lbl">Avg Stock Coverage</div><div class="kpi-val" id="d-coverage">—</div><div class="kpi-sub kpi-neutral">Target 30–45 days</div></div>
@@ -302,29 +327,30 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ═══════════ STATISTICAL MODELS ═══════════ -->
-<div id="tab-statistical" class="tab">
+<div id="tab-statistical" class="tab" role="tabpanel">
   <div class="section-hdr">
     <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Statistical Forecasting Engine</span>
     <div style="display:flex;gap:8px">
-      <select id="stat-sku" style="font-size:11px;padding:6px 10px;width:200px" onchange="runAllModels()">
-        <option value="0">SKU-2041 — Wireless Earbuds Pro</option>
+      <!-- FIX #6: SKU select rebuilt fresh on every loadDemo -->
+      <select id="stat-sku" style="font-size:11px;padding:6px 10px;width:200px" onchange="onSKUChange()">
+        <option value="">— load data first —</option>
       </select>
       <button class="btn-primary" onclick="runAllModels()">Run All Models</button>
     </div>
   </div>
 
-  <!-- MODEL SELECTOR -->
-  <div class="model-tabs">
-    <button class="model-tab active" onclick="switchModel('ma')">Moving Average</button>
-    <button class="model-tab" onclick="switchModel('es')">Exp. Smoothing</button>
-    <button class="model-tab" onclick="switchModel('hw')">Holt-Winters</button>
-    <button class="model-tab" onclick="switchModel('arima')">ARIMA</button>
-    <button class="model-tab" onclick="switchModel('sarima')">SARIMA</button>
-    <button class="model-tab" onclick="switchModel('compare')">Model Comparison</button>
+  <!-- MODEL SELECTOR: FIX #11 keyboard nav -->
+  <div class="model-tabs" role="tablist" aria-label="Statistical models">
+    <button class="model-tab active" role="tab" tabindex="0" onclick="switchModel('ma')" onkeydown="modelKeydown(event,0)">Moving Average</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('es')" onkeydown="modelKeydown(event,1)">Exp. Smoothing</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('hw')" onkeydown="modelKeydown(event,2)">Holt-Winters</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('arima')" onkeydown="modelKeydown(event,3)">ARIMA</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('sarima')" onkeydown="modelKeydown(event,4)">SARIMA</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('compare')" onkeydown="modelKeydown(event,5)">Model Comparison</button>
   </div>
 
   <!-- MOVING AVERAGE -->
-  <div id="model-ma" class="model-panel active">
+  <div id="model-ma" class="model-panel active" role="tabpanel">
     <div class="two-col">
       <div class="card">
         <div class="card-title">Simple Moving Average (SMA)</div>
@@ -344,14 +370,15 @@ select option{background:var(--bg3)}
       </div>
       <div class="card">
         <div class="card-title">SMA Forecast Chart <span class="ct-badge b-blue">13 weeks</span></div>
-        <svg id="ma-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="none"></svg>
+        <!-- FIX #12: xMidYMid meet for non-distorting responsive charts -->
+        <svg id="ma-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="ma-forecast-table" style="margin-top:1rem"></div>
       </div>
     </div>
   </div>
 
   <!-- EXPONENTIAL SMOOTHING -->
-  <div id="model-es" class="model-panel">
+  <div id="model-es" class="model-panel" role="tabpanel">
     <div class="two-col">
       <div class="card">
         <div class="card-title">Single Exponential Smoothing (SES)</div>
@@ -372,17 +399,19 @@ select option{background:var(--bg3)}
       </div>
       <div class="card">
         <div class="card-title">SES Forecast Chart <span class="ct-badge b-blue">13 weeks</span></div>
-        <svg id="es-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="none"></svg>
+        <svg id="es-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="es-forecast-table" style="margin-top:1rem"></div>
       </div>
     </div>
   </div>
 
   <!-- HOLT-WINTERS -->
-  <div id="model-hw" class="model-panel">
+  <div id="model-hw" class="model-panel" role="tabpanel">
     <div class="two-col">
       <div class="card">
         <div class="card-title">Holt-Winters Triple Exponential Smoothing</div>
+        <!-- FIX #2: HW warning shown when data is too short -->
+        <div id="hw-warn" class="hw-warn">⚠ Insufficient data for seasonal period. Need at least 2×m data points. Using fallback m=2.</div>
         <div class="formula-box">
           <div class="formula-title">Formula — Additive seasonal</div>
           Level:   L<sub>t</sub> = <span class="formula-highlight">α(D<sub>t</sub>/S<sub>t-m</sub>) + (1-α)(L<sub>t-1</sub>+T<sub>t-1</sub>)</span><br>
@@ -400,14 +429,17 @@ select option{background:var(--bg3)}
       </div>
       <div class="card">
         <div class="card-title">Holt-Winters Forecast <span class="ct-badge b-purple">Trend + Seasonal</span></div>
-        <svg id="hw-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="none"></svg>
+        <svg id="hw-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="hw-forecast-table" style="margin-top:1rem"></div>
       </div>
     </div>
   </div>
 
-  <!-- ARIMA -->
-  <div id="model-arima" class="model-panel">
+  <!-- ARIMA: FIX #3 disclaimer added -->
+  <div id="model-arima" class="model-panel" role="tabpanel">
+    <div class="model-disclaimer">
+      ⚠ Note: ARIMA is implemented as a JS approximation using gradient-descent AR fitting. Results are directionally correct but may differ from professional statistical software (R/Python statsmodels). Use for planning guidance, not publication-grade analysis.
+    </div>
     <div class="two-col">
       <div class="card">
         <div class="card-title">ARIMA <span class="ct-badge b-purple">AutoRegressive Integrated Moving Average</span></div>
@@ -430,14 +462,17 @@ select option{background:var(--bg3)}
       </div>
       <div class="card">
         <div class="card-title">ARIMA Forecast <span class="ct-badge b-purple">with Confidence Bands</span></div>
-        <svg id="arima-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="none"></svg>
+        <svg id="arima-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="arima-forecast-table" style="margin-top:1rem"></div>
       </div>
     </div>
   </div>
 
-  <!-- SARIMA -->
-  <div id="model-sarima" class="model-panel">
+  <!-- SARIMA: FIX #3 disclaimer added -->
+  <div id="model-sarima" class="model-panel" role="tabpanel">
+    <div class="model-disclaimer">
+      ⚠ Note: SARIMA is implemented as a JS approximation. The seasonal component is modelled via combined AR lags rather than the full Box-Jenkins backshift operator. Results are indicative — for production forecasting use Python statsmodels or R's forecast package.
+    </div>
     <div class="two-col">
       <div class="card">
         <div class="card-title">SARIMA <span class="ct-badge b-pink" style="background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)">Seasonal ARIMA</span></div>
@@ -473,14 +508,14 @@ select option{background:var(--bg3)}
       </div>
       <div class="card">
         <div class="card-title">SARIMA Forecast <span class="ct-badge" style="background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)">Seasonal Pattern</span></div>
-        <svg id="sarima-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="none"></svg>
+        <svg id="sarima-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="sarima-forecast-table" style="margin-top:1rem"></div>
       </div>
     </div>
   </div>
 
   <!-- MODEL COMPARISON -->
-  <div id="model-compare" class="model-panel">
+  <div id="model-compare" class="model-panel" role="tabpanel">
     <div class="card">
       <div class="card-title">Model Comparison <span class="ct-badge b-teal">Auto-selects best fit</span></div>
       <div class="tbl-wrap">
@@ -492,7 +527,7 @@ select option{background:var(--bg3)}
     </div>
     <div class="card">
       <div class="card-title">Forecast Overlay — All Models</div>
-      <svg id="compare-chart" viewBox="0 0 600 160" style="width:100%;height:160px"></svg>
+      <svg id="compare-chart" viewBox="0 0 600 160" preserveAspectRatio="xMidYMid meet" style="width:100%;height:160px"></svg>
       <div class="chart-legend" style="margin-top:10px">
         <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Actual</div>
         <div class="leg-item"><div class="leg-dot" style="background:var(--teal)"></div>SMA</div>
@@ -505,7 +540,7 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ═══════════ EOQ & SAFETY STOCK ═══════════ -->
-<div id="tab-eoq" class="tab">
+<div id="tab-eoq" class="tab" role="tabpanel">
   <div class="section-hdr">
     <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Inventory Optimization Engine</span>
   </div>
@@ -522,12 +557,13 @@ select option{background:var(--bg3)}
         Total Cost = <span class="formula-highlight">DS/Q + QH/2 + DC</span><br>
         <span class="formula-comment">// Q = order quantity, C = unit cost</span>
       </div>
+      <!-- FIX #7: min="1" guards on all EOQ inputs to prevent div-by-zero -->
       <div class="input-grid">
-        <div class="field"><label>Annual Demand (D)</label><input type="number" id="eoq-d" value="15000" onchange="calcEOQ()"></div>
-        <div class="field"><label>Order Cost (S) $</label><input type="number" id="eoq-s" value="250" onchange="calcEOQ()"></div>
-        <div class="field"><label>Holding Cost (H) $</label><input type="number" id="eoq-h" value="8" onchange="calcEOQ()"></div>
-        <div class="field"><label>Unit Cost (C) $</label><input type="number" id="eoq-c" value="45" onchange="calcEOQ()"></div>
-        <div class="field"><label>Lead Time (days)</label><input type="number" id="eoq-lt" value="18" onchange="calcEOQ()"></div>
+        <div class="field"><label>Annual Demand (D)</label><input type="number" id="eoq-d" value="15000" min="1" onchange="calcEOQ()"></div>
+        <div class="field"><label>Order Cost (S) $</label><input type="number" id="eoq-s" value="250" min="0.01" step="0.01" onchange="calcEOQ()"></div>
+        <div class="field"><label>Holding Cost (H) $</label><input type="number" id="eoq-h" value="8" min="0.01" step="0.01" onchange="calcEOQ()"></div>
+        <div class="field"><label>Unit Cost (C) $</label><input type="number" id="eoq-c" value="45" min="0" step="0.01" onchange="calcEOQ()"></div>
+        <div class="field"><label>Lead Time (days)</label><input type="number" id="eoq-lt" value="18" min="1" onchange="calcEOQ()"></div>
         <div class="field"><label>Service Level %</label><select id="eoq-sl" onchange="calcEOQ()"><option value="0.84">80%</option><option value="1.28">90%</option><option value="1.65" selected>95%</option><option value="1.96">97.5%</option><option value="2.33">99%</option></select></div>
       </div>
       <div class="eoq-result" id="eoq-main-result"></div>
@@ -546,13 +582,14 @@ select option{background:var(--bg3)}
         ROP = <span class="formula-highlight">d̄ × LT + SS</span><br>
         <span class="formula-comment">// Reorder when stock hits ROP</span>
       </div>
+      <!-- FIX #7: min guards on SS inputs -->
       <div class="input-grid">
-        <div class="field"><label>Avg Daily Demand (d̄)</label><input type="number" id="ss-d" value="45" onchange="calcSS()"></div>
-        <div class="field"><label>Demand Std Dev (σd)</label><input type="number" id="ss-sd" value="12" onchange="calcSS()"></div>
-        <div class="field"><label>Avg Lead Time (days)</label><input type="number" id="ss-lt" value="18" onchange="calcSS()"></div>
-        <div class="field"><label>Lead Time Std Dev</label><input type="number" id="ss-slt" value="3" onchange="calcSS()"></div>
+        <div class="field"><label>Avg Daily Demand (d̄)</label><input type="number" id="ss-d" value="45" min="1" onchange="calcSS()"></div>
+        <div class="field"><label>Demand Std Dev (σd)</label><input type="number" id="ss-sd" value="12" min="0" onchange="calcSS()"></div>
+        <div class="field"><label>Avg Lead Time (days)</label><input type="number" id="ss-lt" value="18" min="1" onchange="calcSS()"></div>
+        <div class="field"><label>Lead Time Std Dev</label><input type="number" id="ss-slt" value="3" min="0" onchange="calcSS()"></div>
         <div class="field"><label>Service Level %</label><select id="ss-sl" onchange="calcSS()"><option value="0.84">80%</option><option value="1.28">90%</option><option value="1.65" selected>95%</option><option value="1.96">97.5%</option><option value="2.33">99%</option></select></div>
-        <div class="field"><label>Review Period (days)</label><input type="number" id="ss-rp" value="7" onchange="calcSS()"></div>
+        <div class="field"><label>Review Period (days)</label><input type="number" id="ss-rp" value="7" min="1" onchange="calcSS()"></div>
       </div>
       <div class="eoq-result" id="ss-main-result"></div>
     </div>
@@ -560,19 +597,33 @@ select option{background:var(--bg3)}
 
   <!-- BATCH EOQ FOR ALL SKUs -->
   <div class="card">
-    <div class="card-title">Batch Optimization — All SKUs <span class="ct-badge b-teal">Auto-calculated</span></div>
+    <div class="section-hdr" style="margin-bottom:.75rem">
+      <div class="card-title" style="margin-bottom:0">Batch Optimization — All SKUs <span class="ct-badge b-teal">Auto-calculated</span></div>
+      <!-- FIX #9: Export button for batch EOQ table -->
+      <button class="btn-export" onclick="exportTable('batch-eoq-table','eoq_batch')">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
+        Export CSV
+      </button>
+    </div>
     <div class="tbl-wrap">
-      <table><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Weekly Demand</th><th>EOQ (units)</th><th>Safety Stock</th><th>Reorder Point</th><th>Stockout Prob %</th><th>CV</th><th>Status</th></tr></thead>
+      <table id="batch-eoq-tbl"><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Weekly Demand</th><th>EOQ (units)</th><th>Safety Stock</th><th>Reorder Point</th><th>Stockout Prob %</th><th>CV</th><th>Status</th></tr></thead>
       <tbody id="batch-eoq-table"></tbody></table>
     </div>
   </div>
 </div>
 
 <!-- ═══════════ FORECAST ═══════════ -->
-<div id="tab-forecast" class="tab">
+<div id="tab-forecast" class="tab" role="tabpanel">
   <div class="section-hdr">
     <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Demand Forecast Builder</span>
-    <button class="btn-primary" onclick="runForecast()">Run Forecast</button>
+    <div style="display:flex;gap:8px">
+      <!-- FIX #9: Export for forecast -->
+      <button class="btn-export" onclick="exportTable('fc-tbl','forecast')">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
+        Export CSV
+      </button>
+      <button class="btn-primary" onclick="runForecast()">Run Forecast</button>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">Assumptions</div>
@@ -580,7 +631,7 @@ select option{background:var(--bg3)}
       <div class="field"><label>Market</label><select id="fc-market"><option>EMEA</option><option>North America</option><option>APAC</option><option>LATAM</option><option>MEA</option></select></div>
       <div class="field"><label>Category</label><select id="fc-cat"><option>Consumer Electronics</option><option>Accessories</option><option>Peripherals</option><option>Software</option></select></div>
       <div class="field"><label>Horizon</label><select id="fc-horizon"><option>13 weeks</option><option>6 months</option><option>12 months</option></select></div>
-      <div class="field"><label>Base demand (units/wk)</label><input type="number" id="fc-base" value="1400"></div>
+      <div class="field"><label>Base demand (units/wk)</label><input type="number" id="fc-base" value="1400" min="1"></div>
       <div class="field"><label>Growth %</label><input type="number" id="fc-growth" value="8"></div>
       <div class="field"><label>Seasonal index</label><input type="number" id="fc-seasonal" value="1.12" step="0.01"></div>
       <div class="field"><label>Promo uplift %</label><input type="number" id="fc-promo" value="0"></div>
@@ -588,38 +639,79 @@ select option{background:var(--bg3)}
       <div class="field"><label>Confidence</label><select id="fc-conf"><option>90%</option><option>80%</option><option>70%</option></select></div>
     </div>
   </div>
+
+  <!-- FIX #10: Forecast SVG line chart -->
+  <div class="card">
+    <div class="card-title" id="fc-chart-title">13-Week Forecast Chart</div>
+    <div class="fc-chart-wrap">
+      <svg id="fc-chart" viewBox="0 0 600 140" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="chart-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--teal)"></div>Adjusted Forecast</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(79,142,247,0.3)"></div>Confidence Band</div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-title" id="fc-title">13-Week Forecast</div>
-    <div class="tbl-wrap"><table><thead><tr><th>Week</th><th>Base</th><th>Adjusted</th><th>Low</th><th>High</th><th>Confidence</th><th>vs Prior</th></tr></thead><tbody id="fc-body"></tbody></table></div>
+    <div class="tbl-wrap">
+      <table id="fc-tbl">
+        <thead><tr><th>Week</th><th>Base</th><th>Adjusted</th><th>Low</th><th>High</th><th>Confidence</th><th>vs Prior</th></tr></thead>
+        <tbody id="fc-body"></tbody>
+      </table>
+    </div>
   </div>
   <div class="card">
-    <div class="card-title">Imported Forecast — by Market</div>
-    <div class="tbl-wrap"><table><thead><tr><th>Market</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Total</th></tr></thead><tbody id="fc-excel-body"></tbody></table></div>
+    <div class="section-hdr" style="margin-bottom:.75rem">
+      <div class="card-title" style="margin-bottom:0">Imported Forecast — by Market</div>
+      <button class="btn-export" onclick="exportTable('fc-excel-tbl','imported_forecast')">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
+        Export CSV
+      </button>
+    </div>
+    <div class="tbl-wrap">
+      <table id="fc-excel-tbl">
+        <thead><tr><th>Market</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Total</th></tr></thead>
+        <tbody id="fc-excel-body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <!-- ═══════════ INVENTORY ═══════════ -->
-<div id="tab-inventory" class="tab">
+<div id="tab-inventory" class="tab" role="tabpanel">
   <div class="section-hdr">
     <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Inventory Tracker</span>
-    <select id="inv-market-filter" style="font-size:11px;padding:6px 10px" onchange="renderInventory()">
-      <option value="all">All markets</option><option value="emea">EMEA</option><option value="north america">North America</option><option value="apac">APAC</option><option value="latam">LATAM</option>
-    </select>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="inv-market-filter" style="font-size:11px;padding:6px 10px" onchange="renderInventory()">
+        <option value="all">All markets</option><option value="emea">EMEA</option><option value="north america">North America</option><option value="apac">APAC</option><option value="latam">LATAM</option>
+      </select>
+      <!-- FIX #9: export for inventory -->
+      <button class="btn-export" onclick="exportTable('inv-tbl','inventory')">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
+        Export CSV
+      </button>
+    </div>
   </div>
   <div class="filter-row">
-    <button class="filter-pill active" id="flt-all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-pill" id="flt-critical" onclick="setFilter('critical',this)">Critical</button>
-    <button class="filter-pill" id="flt-low" onclick="setFilter('low',this)">Low</button>
-    <button class="filter-pill" id="flt-excess" onclick="setFilter('excess',this)">Excess</button>
-    <button class="filter-pill" id="flt-healthy" onclick="setFilter('healthy',this)">Healthy</button>
+    <button class="filter-pill active" id="flt-all" onclick="setFilter('all',this)" tabindex="0">All</button>
+    <button class="filter-pill" id="flt-critical" onclick="setFilter('critical',this)" tabindex="0">Critical</button>
+    <button class="filter-pill" id="flt-low" onclick="setFilter('low',this)" tabindex="0">Low</button>
+    <button class="filter-pill" id="flt-excess" onclick="setFilter('excess',this)" tabindex="0">Excess</button>
+    <button class="filter-pill" id="flt-healthy" onclick="setFilter('healthy',this)" tabindex="0">Healthy</button>
   </div>
   <div class="card">
-    <div class="tbl-wrap"><table><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Stock</th><th>Days Cover</th><th>ROP</th><th>Weekly</th><th>EOQ</th><th>Safety Stock</th><th>CV</th><th>Status</th></tr></thead><tbody id="inv-body"></tbody></table></div>
+    <div class="tbl-wrap">
+      <table id="inv-tbl">
+        <thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Stock</th><th>Days Cover</th><th>ROP</th><th>Weekly</th><th>EOQ</th><th>Safety Stock</th><th>CV</th><th>Stockout Prob</th><th>Status</th></tr></thead>
+        <tbody id="inv-body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
 <!-- ═══════════ SUPPLIERS ═══════════ -->
-<div id="tab-suppliers" class="tab">
+<div id="tab-suppliers" class="tab" role="tabpanel">
   <div class="two-col">
     <div class="card">
       <div class="card-title">Production Schedule</div>
@@ -637,7 +729,7 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ═══════════ RISKS ═══════════ -->
-<div id="tab-risks" class="tab">
+<div id="tab-risks" class="tab" role="tabpanel">
   <div class="section-hdr"><span style="font-family:var(--font-display);font-size:16px;font-weight:700">Risk Monitor</span></div>
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-lbl">Critical</div><div class="kpi-val kpi-down">2</div></div>
@@ -689,16 +781,12 @@ const DEMO_SUPS=[
   {id:'APAC-05',region:'APAC',otd:93,quality:99.5,lead:20,status:'Preferred'},
 ];
 
-// Synthetic historical weekly demand (52 weeks) for each SKU — used for stat models
-function generateHistory(weekly, n=52){
+function generateHistory(weekly,n=52){
   const arr=[];
-  let base=weekly;
+  let base=Math.max(1,weekly);
   for(let i=0;i<n;i++){
-    // seasonal factor
     const seasonal=1+0.25*Math.sin((i/52)*2*Math.PI)+0.1*Math.sin((i/13)*2*Math.PI);
-    // trend
     const trend=1+(i/n)*0.15;
-    // noise
     const noise=0.8+Math.random()*0.4;
     arr.push(Math.max(1,Math.round(base*seasonal*trend*noise)));
   }
@@ -708,46 +796,164 @@ function generateHistory(weekly, n=52){
 let state={inventory:[],forecast:[],pos:[],suppliers:[]};
 let currentSKUHistory=[];
 
+// FIX #8: persist model params per SKU index
+let skuModelParams={};
+
+function getSKUParams(idx){
+  if(!skuModelParams[idx]) skuModelParams[idx]={
+    maWindow:4, maType:'simple',
+    esAlpha:0.3, esOptimize:'no',
+    hwAlpha:0.3, hwBeta:0.1, hwGamma:0.2,
+    arimaP:1, arimaD:1, arimaQ:1,
+    sarimaP:1, sarimaD:1, sarimaQ:1,
+    sarimaBigP:1, sarimaBigD:1, sarimaBigQ:1, sarimaM:12
+  };
+  return skuModelParams[idx];
+}
+
+function saveParamsFromUI(idx){
+  const p=getSKUParams(idx);
+  p.maWindow=parseInt(document.getElementById('ma-window').value)||4;
+  p.maType=document.getElementById('ma-type').value;
+  p.esAlpha=parseFloat(document.getElementById('es-alpha').value)||0.3;
+  p.esOptimize=document.getElementById('es-optimize').value;
+  p.hwAlpha=parseFloat(document.getElementById('hw-alpha').value)||0.3;
+  p.hwBeta=parseFloat(document.getElementById('hw-beta').value)||0.1;
+  p.hwGamma=parseFloat(document.getElementById('hw-gamma').value)||0.2;
+  p.arimaP=parseInt(document.getElementById('arima-p').value)||1;
+  p.arimaD=parseInt(document.getElementById('arima-d').value)||1;
+  p.arimaQ=parseInt(document.getElementById('arima-q').value)||1;
+  p.sarimaP=parseInt(document.getElementById('sarima-p').value)||1;
+  p.sarimaD=parseInt(document.getElementById('sarima-d').value)||1;
+  p.sarimaQ=parseInt(document.getElementById('sarima-q').value)||1;
+  p.sarimaBigP=parseInt(document.getElementById('sarima-P').value)||1;
+  p.sarimaBigD=parseInt(document.getElementById('sarima-D').value)||1;
+  p.sarimaBigQ=parseInt(document.getElementById('sarima-Q').value)||1;
+  p.sarimaM=parseInt(document.getElementById('sarima-m').value)||12;
+}
+
+function loadParamsToUI(idx){
+  const p=getSKUParams(idx);
+  document.getElementById('ma-window').value=p.maWindow;
+  document.getElementById('ma-type').value=p.maType;
+  document.getElementById('es-alpha').value=p.esAlpha;
+  document.getElementById('es-optimize').value=p.esOptimize;
+  document.getElementById('hw-alpha').value=p.hwAlpha;
+  document.getElementById('hw-beta').value=p.hwBeta;
+  document.getElementById('hw-gamma').value=p.hwGamma;
+  document.getElementById('arima-p').value=p.arimaP;
+  document.getElementById('arima-d').value=p.arimaD;
+  document.getElementById('arima-q').value=p.arimaQ;
+  document.getElementById('sarima-p').value=p.sarimaP;
+  document.getElementById('sarima-d').value=p.sarimaD;
+  document.getElementById('sarima-q').value=p.sarimaQ;
+  document.getElementById('sarima-P').value=p.sarimaBigP;
+  document.getElementById('sarima-D').value=p.sarimaBigD;
+  document.getElementById('sarima-Q').value=p.sarimaBigQ;
+  document.getElementById('sarima-m').value=p.sarimaM;
+}
+
+// FIX #6 + #8: Save old SKU params before switching, load new ones
+let lastSKUIdx=0;
+function onSKUChange(){
+  saveParamsFromUI(lastSKUIdx);
+  const newIdx=parseInt(document.getElementById('stat-sku').value)||0;
+  lastSKUIdx=newIdx;
+  loadParamsToUI(newIdx);
+  updateCurrentHistory();
+  runAllModels();
+}
+
 function loadDemo(){
   state={inventory:[...DEMO_INV],forecast:[...DEMO_FC],pos:[...DEMO_POS],suppliers:[...DEMO_SUPS]};
   document.getElementById('data-status').textContent='DEMO DATA';
   document.getElementById('data-status').className='pill pill-amber';
+  skuModelParams={};
+  lastSKUIdx=0;
   populateSKUSelect();
   renderAll();
 }
 
 function populateSKUSelect(){
   const sel=document.getElementById('stat-sku');
+  if(!state.inventory.length){
+    sel.innerHTML='<option value="">— load data first —</option>';
+    return;
+  }
   sel.innerHTML=state.inventory.map((i,idx)=>`<option value="${idx}">${i.sku} — ${i.name}</option>`).join('');
+  sel.value=String(lastSKUIdx);
+  loadParamsToUI(lastSKUIdx);
   updateCurrentHistory();
 }
 
 function updateCurrentHistory(){
+  if(!state.inventory.length){currentSKUHistory=[];return;}
   const idx=parseInt(document.getElementById('stat-sku').value)||0;
   const sku=state.inventory[idx]||state.inventory[0];
-  if(sku) currentSKUHistory=generateHistory(sku.weekly||100);
+  currentSKUHistory=generateHistory(sku.weekly||100);
 }
 
 /* ════════════════════════════════════════════════════
-   TABS
+   KEYBOARD NAVIGATION
+   FIX #11: arrow-key support for nav and model tabs
 ════════════════════════════════════════════════════ */
 const TABS=['dashboard','statistical','eoq','forecast','inventory','suppliers','risks'];
+function navKeydown(event,idx){
+  const btns=document.querySelectorAll('.nav-wrap .nav-btn');
+  if(event.key==='ArrowRight'||event.key==='ArrowDown'){
+    event.preventDefault();
+    const next=(idx+1)%btns.length;
+    btns[next].focus();btns[next].click();
+  } else if(event.key==='ArrowLeft'||event.key==='ArrowUp'){
+    event.preventDefault();
+    const prev=(idx-1+btns.length)%btns.length;
+    btns[prev].focus();btns[prev].click();
+  }
+}
+const MODEL_KEYS=['ma','es','hw','arima','sarima','compare'];
+function modelKeydown(event,idx){
+  const btns=document.querySelectorAll('.model-tabs .model-tab');
+  if(event.key==='ArrowRight'||event.key==='ArrowDown'){
+    event.preventDefault();
+    const next=(idx+1)%btns.length;
+    btns[next].focus();btns[next].click();
+  } else if(event.key==='ArrowLeft'||event.key==='ArrowUp'){
+    event.preventDefault();
+    const prev=(idx-1+btns.length)%btns.length;
+    btns[prev].focus();btns[prev].click();
+  }
+}
+
 function switchTab(t){
   TABS.forEach((x,i)=>{
     document.getElementById('tab-'+x).classList.remove('active');
-    document.querySelectorAll('.nav-btn')[i].classList.remove('active');
+    const btn=document.querySelectorAll('.nav-wrap .nav-btn')[i];
+    btn.classList.remove('active');
+    btn.setAttribute('aria-selected','false');
+    btn.setAttribute('tabindex','-1');
   });
   document.getElementById('tab-'+t).classList.add('active');
-  document.querySelectorAll('.nav-btn')[TABS.indexOf(t)].classList.add('active');
+  const activeIdx=TABS.indexOf(t);
+  const activeBtn=document.querySelectorAll('.nav-wrap .nav-btn')[activeIdx];
+  activeBtn.classList.add('active');
+  activeBtn.setAttribute('aria-selected','true');
+  activeBtn.setAttribute('tabindex','0');
   if(t==='statistical') runAllModels();
   if(t==='eoq'){calcEOQ();calcSS();renderBatchEOQ();}
 }
 
 function switchModel(m){
-  document.querySelectorAll('.model-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.model-tabs .model-tab').forEach((b,i)=>{
+    b.classList.remove('active');
+    b.setAttribute('aria-selected','false');
+    b.setAttribute('tabindex','-1');
+  });
   document.querySelectorAll('.model-panel').forEach(p=>p.classList.remove('active'));
-  const idx=['ma','es','hw','arima','sarima','compare'].indexOf(m);
-  document.querySelectorAll('.model-tab')[idx].classList.add('active');
+  const idx=MODEL_KEYS.indexOf(m);
+  const activeTab=document.querySelectorAll('.model-tabs .model-tab')[idx];
+  activeTab.classList.add('active');
+  activeTab.setAttribute('aria-selected','true');
+  activeTab.setAttribute('tabindex','0');
   document.getElementById('model-'+m).classList.add('active');
   if(m==='ma') runMA();
   else if(m==='es') runES();
@@ -761,60 +967,90 @@ function switchModel(m){
    STATISTICAL MATH ENGINE
 ════════════════════════════════════════════════════ */
 
-// ── Metrics
 function mape(actual,forecast){
-  const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.a&&p.f);
+  const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.a&&p.f!=null&&!isNaN(p.f));
+  if(!pairs.length) return 0;
   return pairs.reduce((s,p)=>s+Math.abs((p.a-p.f)/p.a),0)/pairs.length*100;
 }
 function mae(actual,forecast){
-  const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.f!==undefined);
+  const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.f!=null&&!isNaN(p.f));
+  if(!pairs.length) return 0;
   return pairs.reduce((s,p)=>s+Math.abs(p.a-p.f),0)/pairs.length;
 }
 function rmse(actual,forecast){
-  const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.f!==undefined);
+  const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.f!=null&&!isNaN(p.f));
+  if(!pairs.length) return 0;
   return Math.sqrt(pairs.reduce((s,p)=>s+Math.pow(p.a-p.f,2),0)/pairs.length);
 }
-function mean(arr){return arr.reduce((s,v)=>s+v,0)/arr.length;}
-function stdDev(arr){const m=mean(arr);return Math.sqrt(arr.reduce((s,v)=>s+Math.pow(v-m,2),0)/arr.length);}
-function cv(arr){const m=mean(arr);return m?stdDev(arr)/m:0;}
+function mean(arr){
+  const valid=arr.filter(v=>v!=null&&!isNaN(v));
+  return valid.length?valid.reduce((s,v)=>s+v,0)/valid.length:0;
+}
+function stdDev(arr){
+  const m=mean(arr);
+  const valid=arr.filter(v=>v!=null&&!isNaN(v));
+  return valid.length?Math.sqrt(valid.reduce((s,v)=>s+Math.pow(v-m,2),0)/valid.length):0;
+}
+function cvOf(arr){const m=mean(arr);return m?stdDev(arr)/m:0;}
+function aic(n,mse,k){return n>0&&mse>0?n*Math.log(mse)+2*k:0;}
 
-// ── AIC approximation
-function aic(n,mse,k){return n*Math.log(mse)+2*k;}
+// FIX #4: Proper stockout probability using normal distribution approximation
+// Uses Φ(z) where z = (days_cover * daily_rate - mean_demand_over_lead_time) / sigma_lt
+function stockoutProbability(daysCover, weeklyDemand){
+  const sigma=weeklyDemand*0.2; // demand std dev (weekly)
+  const muLT=weeklyDemand*2; // mean demand over 14-day default lead time
+  const sigmaLT=Math.sqrt(14/7)*sigma; // sigma over lead time
+  const stockOnHand=daysCover*(weeklyDemand/7);
+  if(sigmaLT<=0) return daysCover<14?50:5;
+  const z=(stockOnHand-muLT)/sigmaLT;
+  // Φ(-z) = probability of stockout = 1 - Φ(z)
+  return Math.max(1,Math.min(99,Math.round((1-normalCDF(z))*100)));
+}
 
-// ── Moving Average
-function computeSMA(data, window){
+// Standard normal CDF approximation (Abramowitz & Stegun)
+function normalCDF(z){
+  const t=1/(1+0.2316419*Math.abs(z));
+  const poly=t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
+  const phi=Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
+  const p=1-phi*poly;
+  return z>=0?p:1-p;
+}
+
+/* ── Moving Average ── */
+function computeSMA(data,window){
+  const w=Math.min(window,data.length);
   const fitted=[];
   for(let i=0;i<data.length;i++){
-    if(i<window-1){fitted.push(null);continue;}
-    fitted.push(mean(data.slice(i-window+1,i+1)));
+    if(i<w-1){fitted.push(null);continue;}
+    fitted.push(mean(data.slice(i-w+1,i+1)));
   }
-  // forecast next n steps
-  const last=data.slice(-window);
-  const fcVal=mean(last);
-  return {fitted,forecast:Array(13).fill(Math.round(fcVal))};
+  const fcVal=mean(data.slice(-w));
+  return {fitted,forecast:Array(13).fill(Math.max(1,Math.round(fcVal)))};
 }
-function computeWMA(data, window){
-  const weights=Array.from({length:window},(_,i)=>i+1);
+function computeWMA(data,window){
+  const w=Math.min(window,data.length);
+  const weights=Array.from({length:w},(_,i)=>i+1);
   const wSum=weights.reduce((s,v)=>s+v,0);
   const fitted=[];
   for(let i=0;i<data.length;i++){
-    if(i<window-1){fitted.push(null);continue;}
-    const slice=data.slice(i-window+1,i+1);
+    if(i<w-1){fitted.push(null);continue;}
+    const slice=data.slice(i-w+1,i+1);
     fitted.push(slice.reduce((s,v,j)=>s+v*weights[j],0)/wSum);
   }
-  const last=data.slice(-window);
+  const last=data.slice(-w);
   const fcVal=last.reduce((s,v,j)=>s+v*weights[j],0)/wSum;
-  return {fitted,forecast:Array(13).fill(Math.round(fcVal))};
+  return {fitted,forecast:Array(13).fill(Math.max(1,Math.round(fcVal)))};
 }
 
-// ── Single Exponential Smoothing
-function computeSES(data, alpha){
+/* ── Exponential Smoothing ── */
+function computeSES(data,alpha){
+  const a=Math.max(0.01,Math.min(0.99,alpha));
   const fitted=[data[0]];
   for(let i=1;i<data.length;i++){
-    fitted.push(alpha*data[i-1]+(1-alpha)*fitted[i-1]);
+    fitted.push(a*data[i-1]+(1-a)*fitted[i-1]);
   }
   const lastS=fitted[fitted.length-1];
-  return {fitted,forecast:Array(13).fill(Math.round(lastS))};
+  return {fitted,forecast:Array(13).fill(Math.max(1,Math.round(lastS)))};
 }
 function optimizeAlpha(data){
   let bestA=0.1,bestMAPE=Infinity;
@@ -823,36 +1059,56 @@ function optimizeAlpha(data){
     const m=mape(data,fitted);
     if(m<bestMAPE){bestMAPE=m;bestA=a;}
   }
-  return bestA;
+  return Math.round(bestA*100)/100;
 }
 
-// ── Holt-Winters (simplified additive)
-function computeHW(data, alpha, beta, gamma, m=4){
-  if(data.length<2*m) m=Math.max(2,Math.floor(data.length/2));
-  // Initialization
+/* ── Holt-Winters ── */
+// FIX #2: Proper guard + warning for short data
+function computeHW(data,alpha,beta,gamma,m=4){
+  const hwWarn=document.getElementById('hw-warn');
+  let usedFallback=false;
+  if(data.length<2*m){
+    m=Math.max(2,Math.floor(data.length/3));
+    usedFallback=true;
+  }
+  if(hwWarn) hwWarn.style.display=usedFallback?'block':'none';
+
+  if(data.length<4){
+    // Not enough data at all — return flat forecast
+    const f=mean(data)||1;
+    return {fitted:data.map(()=>Math.round(f)),forecast:Array(13).fill(Math.round(f))};
+  }
+
   let L=mean(data.slice(0,m));
+  if(!L||isNaN(L)) L=data[0]||1;
   let T=(mean(data.slice(m,2*m))-mean(data.slice(0,m)))/m;
+  if(isNaN(T)) T=0;
+
+  const baseAvg=mean(data.slice(0,m))||1;
   let S=[];
-  for(let i=0;i<m;i++) S.push(data[i]/mean(data.slice(0,m)));
+  for(let i=0;i<m;i++) S.push(Math.max(0.01,(data[i]||baseAvg)/baseAvg));
+
   const fitted=[];
   for(let i=0;i<data.length;i++){
     const si=S[i%m]||1;
     const f=(L+T)*si;
-    fitted.push(Math.round(f));
-    const Lnew=alpha*(data[i]/si)+(1-alpha)*(L+T);
+    fitted.push(Math.max(1,Math.round(f)));
+    const Lnew=alpha*(data[i]/Math.max(0.01,si))+(1-alpha)*(L+T);
     T=beta*(Lnew-L)+(1-beta)*T;
-    S[i%m]=gamma*(data[i]/Lnew)+(1-gamma)*si;
+    S[i%m]=gamma*(data[i]/Math.max(0.01,Lnew))+(1-gamma)*si;
     L=Lnew;
+    if(isNaN(L)){L=mean(data.slice(0,i+1))||1;T=0;}
   }
   const forecast=[];
   for(let h=1;h<=13;h++){
-    forecast.push(Math.round((L+h*T)*S[h%m]||L+h*T));
+    const seasonal=S[h%m]||1;
+    forecast.push(Math.max(1,Math.round((L+h*T)*seasonal)));
   }
   return {fitted,forecast};
 }
 
-// ── ARIMA(p,d,q) — JS implementation
-function differenceData(data, d){
+/* ── ARIMA ── */
+function differenceData(data,d){
   let result=[...data];
   for(let i=0;i<d;i++){
     const diff=[];
@@ -861,19 +1117,9 @@ function differenceData(data, d){
   }
   return result;
 }
-function undifferenceData(diffed, original, d){
-  if(d===0) return diffed;
-  let result=[...diffed];
-  for(let i=0;i<d;i++){
-    const undiff=[original[original.length-1-d+i+1]];
-    for(let j=0;j<result.length;j++) undiff.push(undiff[undiff.length-1]+result[j]);
-    result=undiff.slice(1);
-  }
-  return result;
-}
-function fitAR(data, p){
-  // Yule-Walker simplified (OLS approximation)
-  if(p===0) return {coeffs:[],intercept:mean(data)};
+
+function fitAR(data,p){
+  if(p===0||data.length<=p) return {coeffs:[],intercept:mean(data)||0};
   const n=data.length;
   const y=data.slice(p);
   const X=[];
@@ -882,106 +1128,114 @@ function fitAR(data, p){
     for(let j=1;j<=p;j++) row.push(data[i-j]);
     X.push(row);
   }
-  // Simple gradient-based OLS
   let coeffs=Array(p).fill(0);
-  let intercept=mean(y);
-  const lr=0.0001;
-  for(let iter=0;iter<500;iter++){
+  let intercept=mean(y)||0;
+  const lr=0.00005;
+  const iters=1000;
+  for(let iter=0;iter<iters;iter++){
     const preds=X.map(row=>intercept+row.reduce((s,v,j)=>s+v*coeffs[j],0));
     const errors=y.map((v,i)=>v-preds[i]);
-    intercept+=lr*mean(errors);
-    for(let j=0;j<p;j++) coeffs[j]+=lr*mean(errors.map((e,i)=>e*X[i][j]));
+    const errMean=mean(errors)||0;
+    intercept+=lr*errMean;
+    for(let j=0;j<p;j++){
+      const grad=mean(errors.map((e,i)=>e*(X[i][j]||0)))||0;
+      coeffs[j]+=lr*grad;
+    }
   }
   return {coeffs,intercept};
 }
-function computeARIMA(data, p, d, q){
+
+function computeARIMA(data,p,d,q){
+  if(data.length<Math.max(p,q)+d+2){
+    const f=mean(data)||1;
+    return {fitted:data.map(()=>Math.round(f)),forecast:Array(13).fill(Math.round(f))};
+  }
   const diffed=differenceData(data,d);
-  const {coeffs,intercept}=fitAR(diffed,p);
-  // Compute fitted values
+  const safeP=Math.min(p,diffed.length-2);
+  const {coeffs,intercept}=fitAR(diffed,safeP);
   const fittedDiff=[];
   const errors=[];
   for(let i=0;i<diffed.length;i++){
-    if(i<Math.max(p,q)){fittedDiff.push(diffed[i]);errors.push(0);continue;}
+    if(i<Math.max(safeP,q)){fittedDiff.push(diffed[i]);errors.push(0);continue;}
     let pred=intercept;
-    for(let j=0;j<p;j++) pred+=coeffs[j]*diffed[i-1-j];
-    // MA component
-    for(let j=0;j<q&&j<errors.length;j++) pred+=0.1*errors[errors.length-1-j];
+    for(let j=0;j<safeP;j++) pred+=coeffs[j]*(diffed[i-1-j]||0);
+    for(let j=0;j<q&&j<errors.length;j++) pred+=0.1*(errors[errors.length-1-j]||0);
     fittedDiff.push(pred);
     errors.push(diffed[i]-pred);
   }
-  // Forecast 13 steps
   const extDiff=[...diffed];
   const extErrors=[...errors];
   const fcDiff=[];
   for(let h=0;h<13;h++){
     let pred=intercept;
-    for(let j=0;j<p;j++) pred+=coeffs[j]*(extDiff[extDiff.length-1-j]||0);
+    for(let j=0;j<safeP;j++) pred+=coeffs[j]*(extDiff[extDiff.length-1-j]||0);
     for(let j=0;j<q;j++) pred+=0.1*(extErrors[extErrors.length-1-j]||0);
     fcDiff.push(pred);
     extDiff.push(pred);
     extErrors.push(0);
   }
-  // Undifference
-  const origFitted=undifferenceData(fittedDiff,data,d);
+  let last=data[data.length-1]||mean(data)||1;
   const forecast=[];
-  let last=data[data.length-1];
   for(let h=0;h<13;h++){
-    if(d===0) forecast.push(Math.max(0,Math.round(fcDiff[h])));
-    else{last=Math.max(0,Math.round(last+fcDiff[h]));forecast.push(last);}
+    if(d===0) forecast.push(Math.max(1,Math.round(fcDiff[h]||last)));
+    else{last=Math.max(1,Math.round(last+(fcDiff[h]||0)));forecast.push(last);}
   }
-  const fitted=origFitted.map(v=>Math.max(0,Math.round(v)));
+  // Reconstruct fitted on original scale
+  let val=data[0]||1;
+  const fitted=[val];
+  for(let i=0;i<fittedDiff.length-1;i++){
+    if(d===0) fitted.push(Math.max(1,Math.round(fittedDiff[i])));
+    else{val=Math.max(1,Math.round(val+(fittedDiff[i+1]-fittedDiff[i])));fitted.push(val);}
+  }
   return {fitted,forecast};
 }
 
-// ── SARIMA(p,d,q)(P,D,Q)[m]
-function computeSARIMA(data, p, d, q, P, D, Q, m){
-  // Apply non-seasonal differencing
+/* ── SARIMA ── */
+function computeSARIMA(data,p,d,q,P,D,Q,m){
+  if(data.length<2*m+d+D*m){
+    return computeARIMA(data,p,d,q); // fallback to ARIMA
+  }
   const diffed=differenceData(data,d);
-  // Apply seasonal differencing
   let sdiffed=[...diffed];
   for(let i=0;i<D;i++){
     const sd=[];
     for(let j=m;j<sdiffed.length;j++) sd.push(sdiffed[j]-sdiffed[j-m]);
-    sdiffed=sd;
+    if(sd.length>2) sdiffed=sd;
   }
-  if(sdiffed.length<4) sdiffed=diffed; // fallback
-  // Fit combined AR model
-  const totalP=Math.max(p+P*m,1);
-  const {coeffs,intercept}=fitAR(sdiffed,Math.min(totalP,sdiffed.length-1));
-  // Forecast
+  const totalLags=Math.max(1,Math.min(p+P*m,sdiffed.length-2));
+  const {coeffs,intercept}=fitAR(sdiffed,totalLags);
   const extSD=[...sdiffed];
+  const extErrors=Array(sdiffed.length).fill(0);
   const fcSD=[];
   for(let h=0;h<13;h++){
     let pred=intercept;
-    for(let j=0;j<coeffs.length;j++) pred+=coeffs[j]*(extSD[extSD.length-1-j]||0);
-    // Seasonal MA
-    const seasonalError=extSD.length>=m?extSD[extSD.length-m]-pred:0;
+    for(let j=0;j<coeffs.length&&j<extSD.length;j++) pred+=(coeffs[j]||0)*(extSD[extSD.length-1-j]||0);
+    const seasonalError=extSD.length>=m?(extSD[extSD.length-m]||0)-pred:0;
     pred+=0.1*Q*seasonalError;
     fcSD.push(pred);
     extSD.push(pred);
+    extErrors.push(0);
   }
-  // Reconstruct
+  let lastVal=data[data.length-1]||mean(data)||1;
+  const avgDiff=mean(sdiffed)||0;
   const forecast=[];
-  let lastVal=data[data.length-1];
-  const avgDiff=sdiffed.length?mean(sdiffed.filter(v=>!isNaN(v))):0;
   for(let h=0;h<13;h++){
-    // Add seasonal pattern from data
     const seasonalIdx=data.length-m+(h%m);
-    const seasonFactor=seasonalIdx>=0&&seasonalIdx<data.length?data[seasonalIdx]/mean(data.slice(Math.max(0,seasonalIdx-m),seasonalIdx+1)):1;
-    lastVal=Math.max(1,Math.round(lastVal*(0.98+0.04*seasonFactor)+(fcSD[h]||avgDiff)));
+    const win=data.slice(Math.max(0,seasonalIdx-m),Math.min(data.length,seasonalIdx+1));
+    const seasonFactor=win.length&&mean(win)?((data[Math.min(seasonalIdx,data.length-1)]||mean(win))/mean(win)):1;
+    lastVal=Math.max(1,Math.round(lastVal*(0.97+0.06*Math.max(0.5,Math.min(1.5,seasonFactor)))+(fcSD[h]||avgDiff)));
     forecast.push(lastVal);
   }
-  // Fitted values approximation
   const fitted=data.map((v,i)=>{
     if(i<2) return v;
     const seasonal=i>=m?data[i-m]:v;
-    return Math.max(0,Math.round(0.7*v+0.3*seasonal));
+    return Math.max(1,Math.round(0.7*v+0.3*seasonal));
   });
   return {fitted,forecast};
 }
 
-// ── Confidence interval for forecast
-function confidenceBand(forecast, sigma=0.1){
+/* ── Confidence band ── */
+function confidenceBand(forecast,sigma=0.1){
   return forecast.map((f,i)=>{
     const spread=f*sigma*(1+i*0.05);
     return {low:Math.max(0,Math.round(f-1.96*spread)),high:Math.round(f+1.96*spread)};
@@ -989,54 +1243,49 @@ function confidenceBand(forecast, sigma=0.1){
 }
 
 /* ── SVG Line Chart renderer ── */
-function renderLineChart(svgId, actual, fitted, forecast, colors){
+function renderLineChart(svgId,actual,fitted,forecast,colors){
   const svg=document.getElementById(svgId);
   if(!svg) return;
+  if(!actual||!actual.length){svg.innerHTML='';return;}
   const W=400,H=140,pad={t:10,r:10,b:25,l:40};
-  const allVals=[...actual,...(fitted||[]).filter(v=>v!=null),...(forecast||[])].filter(v=>v!=null);
+  const allVals=[...actual,...(fitted||[]).filter(v=>v!=null),...(forecast||[])].filter(v=>v!=null&&!isNaN(v));
+  if(!allVals.length) return;
   const minV=Math.min(...allVals)*0.85;
   const maxV=Math.max(...allVals)*1.1;
-  const scaleX=(i,total)=>pad.l+(i/(total-1))*(W-pad.l-pad.r);
-  const scaleY=v=>H-pad.b-((v-minV)/(maxV-minV))*(H-pad.t-pad.b);
+  const range=maxV-minV||1;
   const nAct=actual.length;
   const nFc=(forecast||[]).length;
   const totalPts=nAct+nFc;
+  const sx=(i)=>pad.l+(i/Math.max(1,totalPts-1))*(W-pad.l-pad.r);
+  const sy=(v)=>H-pad.b-((v-minV)/range)*(H-pad.t-pad.b);
 
-  // Confidence band for forecast
   const band=forecast?confidenceBand(forecast,0.12):[];
   let bandPath='';
   if(band.length){
-    const fwdPts=band.map((b,i)=>({x:scaleX(nAct+i,totalPts),yh:scaleY(b.high),yl:scaleY(b.low)}));
+    const fwdPts=band.map((b,i)=>({x:sx(nAct+i),yh:sy(b.high),yl:sy(b.low)}));
     bandPath=`M ${fwdPts[0].x} ${fwdPts[0].yh} `+fwdPts.map(p=>`L ${p.x} ${p.yh}`).join(' ')+
       ` L ${fwdPts[fwdPts.length-1].x} ${fwdPts[fwdPts.length-1].yl} `+
       [...fwdPts].reverse().map(p=>`L ${p.x} ${p.yl}`).join(' ')+' Z';
   }
-
-  // Grid lines
   const gridLines=Array.from({length:4},(_,i)=>{
     const v=minV+(maxV-minV)*(i/3);
-    const y=scaleY(v);
+    const y=sy(v);
+    const label=v>=1000?(Math.round(v/100)/10)+'k':Math.round(v);
     return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" class="grid-line"/>
-            <text x="${pad.l-4}" y="${y+3}" class="axis-label" text-anchor="end">${Math.round(v/1000)*1>0?Math.round(v/100)*100:Math.round(v)}</text>`;
+            <text x="${pad.l-4}" y="${y+3}" class="axis-label" text-anchor="end">${label}</text>`;
   }).join('');
-
-  // Actual line
-  const actPath=actual.map((v,i)=>`${i===0?'M':'L'} ${scaleX(i,totalPts)} ${scaleY(v)}`).join(' ');
-  // Fitted line
+  const actPath=actual.map((v,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(v)}`).join(' ');
   let fitPath='';
   if(fitted){
-    const validFitted=fitted.map((v,i)=>({v,i})).filter(p=>p.v!=null);
-    fitPath=validFitted.map((p,j)=>`${j===0?'M':'L'} ${scaleX(p.i,totalPts)} ${scaleY(p.v)}`).join(' ');
+    const validFitted=fitted.map((v,i)=>({v,i})).filter(p=>p.v!=null&&!isNaN(p.v));
+    if(validFitted.length>1) fitPath=validFitted.map((p,j)=>`${j===0?'M':'L'} ${sx(p.i)} ${sy(p.v)}`).join(' ');
   }
-  // Forecast line
   let fcPath='';
-  if(forecast&&forecast.length){
-    const startX=scaleX(nAct-1,totalPts);
-    const startY=scaleY(actual[nAct-1]);
-    fcPath=`M ${startX} ${startY} `+forecast.map((v,i)=>`L ${scaleX(nAct+i,totalPts)} ${scaleY(v)}`).join(' ');
+  if(forecast&&forecast.length&&nAct>0){
+    const startX=sx(nAct-1),startY=sy(actual[nAct-1]);
+    fcPath=`M ${startX} ${startY} `+forecast.map((v,i)=>`L ${sx(nAct+i)} ${sy(v)}`).join(' ');
   }
-  // Dots for actual
-  const dots=actual.map((v,i)=>`<circle cx="${scaleX(i,totalPts)}" cy="${scaleY(v)}" r="2" fill="${colors.actual||'#4F8EF7'}"/>`).join('');
+  const dots=actual.map((v,i)=>`<circle cx="${sx(i)}" cy="${sy(v)}" r="2" fill="${colors.actual||'#4F8EF7'}"/>`).join('');
 
   svg.innerHTML=`
     <rect width="${W}" height="${H}" fill="transparent"/>
@@ -1047,16 +1296,16 @@ function renderLineChart(svgId, actual, fitted, forecast, colors){
     ${fcPath?`<path d="${fcPath}" stroke="${colors.forecast||'#22D3A4'}" stroke-width="2" fill="none" stroke-dasharray="5,3"/>` :''}
     ${dots}
     <text x="${pad.l}" y="${H-5}" class="axis-label">History</text>
-    ${forecast?`<text x="${scaleX(nAct,totalPts)}" y="${H-5}" class="axis-label" fill="${colors.forecast||'#22D3A4'}">► Forecast</text>`:''}
+    ${forecast?`<text x="${sx(nAct)+2}" y="${H-5}" class="axis-label" fill="${colors.forecast||'#22D3A4'}">► Forecast</text>`:''}
   `;
 }
 
-function renderResults(containerId, {mapeVal, maeVal, rmseVal, aicVal, extra}){
+function renderResults(containerId,{mapeVal,maeVal,rmseVal,aicVal,extra}){
   const items=[
-    {label:'MAPE',val:mapeVal.toFixed(2)+'%',sub:'Mean Abs % Error'},
-    {label:'MAE',val:Math.round(maeVal),sub:'Mean Abs Error'},
-    {label:'RMSE',val:Math.round(rmseVal),sub:'Root Mean Sq Error'},
-    ...(aicVal!==undefined?[{label:'AIC',val:aicVal.toFixed(1),sub:'Lower = better fit'}]:[]),
+    {label:'MAPE',val:(mapeVal||0).toFixed(2)+'%',sub:'Mean Abs % Error'},
+    {label:'MAE',val:Math.round(maeVal||0).toLocaleString(),sub:'Mean Abs Error'},
+    {label:'RMSE',val:Math.round(rmseVal||0).toLocaleString(),sub:'Root Mean Sq Error'},
+    ...(aicVal!==undefined?[{label:'AIC',val:(aicVal||0).toFixed(1),sub:'Lower = better fit'}]:[]),
     ...(extra||[]),
   ];
   document.getElementById(containerId).innerHTML=items.map(i=>`
@@ -1067,25 +1316,48 @@ function renderResults(containerId, {mapeVal, maeVal, rmseVal, aicVal, extra}){
     </div>`).join('');
 }
 
-function renderForecastMiniTable(containerId, forecast, band){
+function renderForecastMiniTable(containerId,forecast,band){
   const weeks=forecast.slice(0,6);
   document.getElementById(containerId).innerHTML=`
     <table style="font-size:11px">
       <thead><tr><th>Week</th><th>Forecast</th><th>Low (95%)</th><th>High (95%)</th></tr></thead>
-      <tbody>${weeks.map((f,i)=>`<tr><td>W+${i+1}</td><td style="color:var(--teal);font-weight:600">${f.toLocaleString()}</td><td style="color:var(--text3)">${band?band[i].low.toLocaleString():'—'}</td><td style="color:var(--text3)">${band?band[i].high.toLocaleString():'—'}</td></tr>`).join('')}</tbody>
+      <tbody>${weeks.map((f,i)=>`<tr>
+        <td>W+${i+1}</td>
+        <td style="color:var(--teal);font-weight:600">${(f||0).toLocaleString()}</td>
+        <td style="color:var(--text3)">${band&&band[i]?band[i].low.toLocaleString():'—'}</td>
+        <td style="color:var(--text3)">${band&&band[i]?band[i].high.toLocaleString():'—'}</td>
+      </tr>`).join('')}</tbody>
     </table>`;
+}
+
+/* FIX #5: Guard all model runners when no data loaded */
+function noDataPlaceholder(resultId,chartId,tableId){
+  const el=document.getElementById(resultId);
+  if(el) el.innerHTML='<div class="empty-state"><div class="empty-state-icon">📊</div>Load data to run this model</div>';
+  const chart=document.getElementById(chartId);
+  if(chart) chart.innerHTML='';
+  const tbl=document.getElementById(tableId);
+  if(tbl) tbl.innerHTML='';
 }
 
 /* ── RUN MODELS ── */
 function runAllModels(){
-  updateCurrentHistory();
+  if(!currentSKUHistory.length){
+    ['ma','es','hw','arima','sarima'].forEach(m=>{
+      noDataPlaceholder(`${m}-results`,`${m}-chart`,`${m}-forecast-table`);
+    });
+    document.getElementById('comparison-body').innerHTML='<tr><td colspan="8" class="empty-state">Load data to compare models</td></tr>';
+    return;
+  }
   runMA(); runES(); runHW(); runARIMA(); runSARIMA();
   updateBestModel();
 }
 
 function runMA(){
+  if(!currentSKUHistory.length){noDataPlaceholder('ma-results','ma-chart','ma-forecast-table');return;}
   const data=currentSKUHistory;
-  const w=parseInt(document.getElementById('ma-window').value)||4;
+  const w=Math.max(2,Math.min(parseInt(document.getElementById('ma-window').value)||4,data.length));
+  document.getElementById('ma-window').value=w;
   const type=document.getElementById('ma-type').value;
   const result=type==='weighted'?computeWMA(data,w):computeSMA(data,w);
   const validFitted=result.fitted.filter(v=>v!=null);
@@ -1096,11 +1368,11 @@ function runMA(){
   const aicV=aic(validActual.length,rm*rm,w);
   renderResults('ma-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Window',val:w,sub:'periods'}]});
   renderLineChart('ma-chart',data.slice(-26),null,result.forecast,{actual:'#4F8EF7',forecast:'#22D3A4'});
-  const band=confidenceBand(result.forecast,0.1);
-  renderForecastMiniTable('ma-forecast-table',result.forecast,band);
+  renderForecastMiniTable('ma-forecast-table',result.forecast,confidenceBand(result.forecast,0.1));
 }
 
 function runES(){
+  if(!currentSKUHistory.length){noDataPlaceholder('es-results','es-chart','es-forecast-table');return;}
   const data=currentSKUHistory;
   const optimize=document.getElementById('es-optimize').value==='yes';
   let alpha=parseFloat(document.getElementById('es-alpha').value)||0.3;
@@ -1112,15 +1384,15 @@ function runES(){
   const aicV=aic(data.length,rm*rm,2);
   renderResults('es-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Alpha',val:alpha.toFixed(3),sub:'smoothing factor'}]});
   renderLineChart('es-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(245,158,11,0.5)',forecast:'#F59E0B',band:'rgba(245,158,11,0.08)'});
-  const band=confidenceBand(result.forecast,0.12);
-  renderForecastMiniTable('es-forecast-table',result.forecast,band);
+  renderForecastMiniTable('es-forecast-table',result.forecast,confidenceBand(result.forecast,0.12));
 }
 
 function runHW(){
+  if(!currentSKUHistory.length){noDataPlaceholder('hw-results','hw-chart','hw-forecast-table');return;}
   const data=currentSKUHistory;
-  const alpha=parseFloat(document.getElementById('hw-alpha').value)||0.3;
-  const beta=parseFloat(document.getElementById('hw-beta').value)||0.1;
-  const gamma=parseFloat(document.getElementById('hw-gamma').value)||0.2;
+  const alpha=Math.max(0.01,Math.min(0.99,parseFloat(document.getElementById('hw-alpha').value)||0.3));
+  const beta=Math.max(0.01,Math.min(0.99,parseFloat(document.getElementById('hw-beta').value)||0.1));
+  const gamma=Math.max(0.01,Math.min(0.99,parseFloat(document.getElementById('hw-gamma').value)||0.2));
   const result=computeHW(data,alpha,beta,gamma,4);
   const m=mape(data,result.fitted);
   const ma2=mae(data,result.fitted);
@@ -1128,84 +1400,90 @@ function runHW(){
   const aicV=aic(data.length,rm*rm,3);
   renderResults('hw-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV});
   renderLineChart('hw-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(167,139,250,0.5)',forecast:'#A78BFA',band:'rgba(167,139,250,0.08)'});
-  const band=confidenceBand(result.forecast,0.13);
-  renderForecastMiniTable('hw-forecast-table',result.forecast,band);
+  renderForecastMiniTable('hw-forecast-table',result.forecast,confidenceBand(result.forecast,0.13));
 }
 
 function runARIMA(){
+  if(!currentSKUHistory.length){noDataPlaceholder('arima-results','arima-chart','arima-forecast-table');return;}
   const data=currentSKUHistory;
-  const p=parseInt(document.getElementById('arima-p').value)||1;
-  const d=parseInt(document.getElementById('arima-d').value)||1;
-  const q=parseInt(document.getElementById('arima-q').value)||1;
+  const p=Math.max(0,parseInt(document.getElementById('arima-p').value)||1);
+  const d=Math.max(0,parseInt(document.getElementById('arima-d').value)||1);
+  const q=Math.max(0,parseInt(document.getElementById('arima-q').value)||1);
   const result=computeARIMA(data,p,d,q);
-  const m=mape(data.slice(result.fitted.length>data.length?0:data.length-result.fitted.length),result.fitted);
-  const ma2=mae(data.slice(-result.fitted.length),result.fitted);
-  const rm=rmse(data.slice(-result.fitted.length),result.fitted);
+  const alignedActual=data.slice(-result.fitted.length);
+  const m=mape(alignedActual,result.fitted)||0;
+  const ma2=mae(alignedActual,result.fitted);
+  const rm=rmse(alignedActual,result.fitted);
   const aicV=aic(data.length,rm*rm,p+d+q);
-  renderResults('arima-results',{mapeVal:m||0,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Order',val:`(${p},${d},${q})`,sub:'p,d,q'}]});
+  renderResults('arima-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Order',val:`(${p},${d},${q})`,sub:'p,d,q'}]});
   renderLineChart('arima-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(167,139,250,0.5)',forecast:'#A78BFA',band:'rgba(167,139,250,0.1)'});
-  const band=confidenceBand(result.forecast,0.15);
-  renderForecastMiniTable('arima-forecast-table',result.forecast,band);
+  renderForecastMiniTable('arima-forecast-table',result.forecast,confidenceBand(result.forecast,0.15));
 }
 
 function runSARIMA(){
+  if(!currentSKUHistory.length){noDataPlaceholder('sarima-results','sarima-chart','sarima-forecast-table');return;}
   const data=currentSKUHistory;
-  const p=parseInt(document.getElementById('sarima-p').value)||1;
-  const d=parseInt(document.getElementById('sarima-d').value)||1;
-  const q=parseInt(document.getElementById('sarima-q').value)||1;
-  const P=parseInt(document.getElementById('sarima-P').value)||1;
-  const D=parseInt(document.getElementById('sarima-D').value)||1;
-  const Q=parseInt(document.getElementById('sarima-Q').value)||1;
-  const m=parseInt(document.getElementById('sarima-m').value)||12;
+  const p=Math.max(0,parseInt(document.getElementById('sarima-p').value)||1);
+  const d=Math.max(0,parseInt(document.getElementById('sarima-d').value)||1);
+  const q=Math.max(0,parseInt(document.getElementById('sarima-q').value)||1);
+  const P=Math.max(0,parseInt(document.getElementById('sarima-P').value)||1);
+  const D=Math.max(0,parseInt(document.getElementById('sarima-D').value)||1);
+  const Q=Math.max(0,parseInt(document.getElementById('sarima-Q').value)||1);
+  const m=Math.max(2,parseInt(document.getElementById('sarima-m').value)||12);
   const result=computeSARIMA(data,p,d,q,P,D,Q,m);
-  const mapeV=mape(data.slice(-result.fitted.length),result.fitted);
-  const maeV=mae(data.slice(-result.fitted.length),result.fitted);
-  const rmseV=rmse(data.slice(-result.fitted.length),result.fitted);
+  const alignedActual=data.slice(-result.fitted.length);
+  const mapeV=mape(alignedActual,result.fitted)||0;
+  const maeV=mae(alignedActual,result.fitted);
+  const rmseV=rmse(alignedActual,result.fitted);
   const aicV=aic(data.length,rmseV*rmseV,p+d+q+P+D+Q);
-  renderResults('sarima-results',{mapeVal:mapeV||0,maeVal:maeV,rmseVal:rmseV,aicVal:aicV,extra:[{label:'Season m',val:m,sub:'seasonal period'}]});
+  renderResults('sarima-results',{mapeVal:mapeV,maeVal:maeV,rmseVal:rmseV,aicVal:aicV,extra:[{label:'Season m',val:m,sub:'seasonal period'}]});
   renderLineChart('sarima-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(244,114,182,0.5)',forecast:'#F472B6',band:'rgba(244,114,182,0.08)'});
-  const band=confidenceBand(result.forecast,0.14);
-  renderForecastMiniTable('sarima-forecast-table',result.forecast,band);
+  renderForecastMiniTable('sarima-forecast-table',result.forecast,confidenceBand(result.forecast,0.14));
 }
 
 function updateBestModel(){
+  if(!currentSKUHistory.length){document.getElementById('d-best-model').textContent='—';return;}
   const data=currentSKUHistory;
   const models=[
-    {name:'SMA',fn:()=>{const r=computeSMA(data,4);return mape(data.slice(-r.fitted.filter(v=>v!=null).length),r.fitted.filter(v=>v!=null));}},
+    {name:'SMA',fn:()=>{const r=computeSMA(data,4);const f=r.fitted.filter(v=>v!=null);return mape(data.slice(-f.length),f);}},
     {name:'SES',fn:()=>{const r=computeSES(data,0.3);return mape(data,r.fitted);}},
     {name:'Holt-Winters',fn:()=>{const r=computeHW(data,0.3,0.1,0.2,4);return mape(data,r.fitted);}},
     {name:'ARIMA',fn:()=>{const r=computeARIMA(data,1,1,1);return mape(data.slice(-r.fitted.length),r.fitted)||99;}},
     {name:'SARIMA',fn:()=>{const r=computeSARIMA(data,1,1,1,1,1,1,12);return mape(data.slice(-r.fitted.length),r.fitted)||99;}},
   ];
   let best={name:'—',mape:Infinity};
-  models.forEach(m=>{try{const v=m.fn();if(v<best.mape){best={name:m.name,mape:v};}}catch(e){}});
+  models.forEach(m=>{try{const v=m.fn();if(isFinite(v)&&v<best.mape){best={name:m.name,mape:v};}}catch(e){}});
   document.getElementById('d-best-model').textContent=best.name;
 }
 
 function runComparison(){
+  if(!currentSKUHistory.length){
+    document.getElementById('comparison-body').innerHTML='<tr><td colspan="8" class="empty-state">Load data to compare models</td></tr>';
+    document.getElementById('compare-chart').innerHTML='';
+    return;
+  }
   const data=currentSKUHistory;
   const models=[
     {name:'SMA(4)',run:()=>{const r=computeSMA(data,4);const f=r.fitted.filter(v=>v!=null);const a=data.slice(-f.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,f),maeV:mae(a,f),rmseV:rmse(a,f),k:4,bestFor:'Stable demand, no trend',color:'var(--teal)'};}},
     {name:'WMA(4)',run:()=>{const r=computeWMA(data,4);const f=r.fitted.filter(v=>v!=null);const a=data.slice(-f.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,f),maeV:mae(a,f),rmseV:rmse(a,f),k:4,bestFor:'Recency-weighted stable',color:'var(--blue)'};}},
     {name:'SES(α=0.3)',run:()=>{const r=computeSES(data,0.3);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(data,r.fitted),maeV:mae(data,r.fitted),rmseV:rmse(data,r.fitted),k:2,bestFor:'No trend/seasonality',color:'var(--amber)'};}},
     {name:'Holt-Winters',run:()=>{const r=computeHW(data,0.3,0.1,0.2,4);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(data,r.fitted),maeV:mae(data,r.fitted),rmseV:rmse(data,r.fitted),k:3,bestFor:'Trend + seasonal',color:'var(--purple)'};}},
-    {name:'ARIMA(1,1,1)',run:()=>{const r=computeARIMA(data,1,1,1);const f=r.fitted;const a=data.slice(-f.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,f)||0,maeV:mae(a,f),rmseV:rmse(a,f),k:3,bestFor:'Non-stationary trends',color:'var(--red)'};}},
-    {name:'SARIMA(1,1,1)(1,1,1)[12]',run:()=>{const r=computeSARIMA(data,1,1,1,1,1,1,12);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(data.slice(-r.fitted.length),r.fitted)||0,maeV:mae(data.slice(-r.fitted.length),r.fitted),rmseV:rmse(data.slice(-r.fitted.length),r.fitted),k:6,bestFor:'Seasonal + trend patterns',color:'var(--pink)'};}},
+    {name:'ARIMA(1,1,1)',run:()=>{const r=computeARIMA(data,1,1,1);const a=data.slice(-r.fitted.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,r.fitted)||0,maeV:mae(a,r.fitted),rmseV:rmse(a,r.fitted),k:3,bestFor:'Non-stationary trends',color:'var(--red)'};}},
+    {name:'SARIMA(1,1,1)(1,1,1)[12]',run:()=>{const r=computeSARIMA(data,1,1,1,1,1,1,12);const a=data.slice(-r.fitted.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,r.fitted)||0,maeV:mae(a,r.fitted),rmseV:rmse(a,r.fitted),k:6,bestFor:'Seasonal + trend patterns',color:'var(--pink)'};}},
   ];
-
-  const results=models.map(m=>{try{return{name:m.name,...m.run()};}catch(e){return{name:m.name,mapeV:99,maeV:99,rmseV:99,forecast:Array(13).fill(0),k:1,bestFor:'Error',color:'var(--text3)'};}});
+  const results=models.map(m=>{try{return{name:m.name,...m.run()};}catch(e){return{name:m.name,mapeV:99,maeV:0,rmseV:0,forecast:Array(13).fill(mean(data)||1),k:1,bestFor:'Error',color:'var(--text3)'};}});
   const best=results.reduce((b,r)=>r.mapeV<b.mapeV?r:b,results[0]);
 
   document.getElementById('comparison-body').innerHTML=results.map(r=>{
-    const aicV=aic(data.length,r.rmseV*r.rmseV,r.k);
+    const aicV=aic(data.length,(r.rmseV||0)*(r.rmseV||0),r.k);
     const isWinner=r.name===best.name;
     return `<tr ${isWinner?'class="winner"':''}>
       <td style="font-family:var(--font-mono);color:${r.color}">${r.name}${isWinner?' ★':''}</td>
-      <td class="${isWinner?'best':''}">${r.mapeV.toFixed(2)}%</td>
-      <td>${Math.round(r.maeV).toLocaleString()}</td>
-      <td>${Math.round(r.rmseV).toLocaleString()}</td>
+      <td class="${isWinner?'best':''}">${(r.mapeV||0).toFixed(2)}%</td>
+      <td>${Math.round(r.maeV||0).toLocaleString()}</td>
+      <td>${Math.round(r.rmseV||0).toLocaleString()}</td>
       <td>${aicV.toFixed(1)}</td>
-      <td style="color:var(--teal);font-family:var(--font-mono)">${r.forecast[0]?r.forecast[0].toLocaleString():'—'}</td>
+      <td style="color:var(--teal);font-family:var(--font-mono)">${r.forecast&&r.forecast[0]?(r.forecast[0]).toLocaleString():'—'}</td>
       <td style="color:var(--text2);font-size:11px">${r.bestFor}</td>
       <td>${isWinner?'<span class="badge b-teal">BEST FIT</span>':'<span class="badge b-gray">—</span>'}</td>
     </tr>`;
@@ -1217,12 +1495,13 @@ function runComparison(){
   const nAct=Math.min(data.length,24);
   const actData=data.slice(-nAct);
   const allVals=[...actData,...results.flatMap(r=>(r.forecast||[]).slice(0,8))].filter(v=>v&&!isNaN(v));
+  if(!allVals.length){svg.innerHTML='';return;}
   const minV=Math.min(...allVals)*0.85;
   const maxV=Math.max(...allVals)*1.1;
+  const range=maxV-minV||1;
   const totalPts=nAct+8;
-  const sx=(i)=>pad.l+(i/(totalPts-1))*(W-pad.l-pad.r);
-  const sy=(v)=>H-pad.b-((v-minV)/(maxV-minV))*(H-pad.t-pad.b);
-
+  const sx=(i)=>pad.l+(i/Math.max(1,totalPts-1))*(W-pad.l-pad.r);
+  const sy=(v)=>H-pad.b-((v-minV)/range)*(H-pad.t-pad.b);
   const actPath=actData.map((v,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(v)}`).join(' ');
   const fcPaths=results.map(r=>{
     if(!r.forecast||!r.forecast[0]) return '';
@@ -1230,12 +1509,7 @@ function runComparison(){
     const path=r.forecast.slice(0,8).map((v,i)=>`L ${sx(nAct+i)} ${sy(v)}`).join(' ');
     return `<path d="M ${startX} ${startY} ${path}" stroke="${r.color}" stroke-width="1.5" fill="none" stroke-dasharray="4,2" opacity="0.8"/>`;
   }).join('');
-
   svg.innerHTML=`
-    ${results.map(r=>{
-      const v=Math.max(minV,Math.min(maxV,r.forecast[0]||0));
-      return `<line x1="${pad.l}" y1="${sy(v)}" x2="${W-pad.r}" y2="${sy(v)}" stroke="${r.color}" stroke-width="0.3" opacity="0.2"/>`;
-    }).join('')}
     <path d="${actPath}" stroke="var(--blue)" stroke-width="2" fill="none"/>
     ${actData.map((v,i)=>`<circle cx="${sx(i)}" cy="${sy(v)}" r="2" fill="var(--blue)"/>`).join('')}
     ${fcPaths}
@@ -1244,23 +1518,29 @@ function runComparison(){
 
 /* ════════════════════════════════════════════════════
    EOQ & SAFETY STOCK
+   FIX #7: All calculations guarded against div-by-zero / NaN
 ════════════════════════════════════════════════════ */
+function safeNum(id,fallback){
+  const v=parseFloat(document.getElementById(id).value);
+  return (isNaN(v)||v<=0)?fallback:v;
+}
+
 function calcEOQ(){
-  const D=parseFloat(document.getElementById('eoq-d').value)||15000;
-  const S=parseFloat(document.getElementById('eoq-s').value)||250;
-  const H=parseFloat(document.getElementById('eoq-h').value)||8;
-  const C=parseFloat(document.getElementById('eoq-c').value)||45;
-  const LT=parseFloat(document.getElementById('eoq-lt').value)||18;
+  const D=safeNum('eoq-d',15000);
+  const S=safeNum('eoq-s',250);
+  const H=safeNum('eoq-h',8);
+  const C=safeNum('eoq-c',45);
+  const LT=safeNum('eoq-lt',18);
   const Z=parseFloat(document.getElementById('eoq-sl').value)||1.65;
 
-  const EOQ=Math.round(Math.sqrt(2*D*S/H));
+  const EOQ=Math.max(1,Math.round(Math.sqrt(2*D*S/H)));
   const orderCost=Math.round((D/EOQ)*S);
   const holdCost=Math.round((EOQ/2)*H);
   const totalCost=Math.round(orderCost+holdCost+D*C);
   const ordersPerYear=Math.round(D/EOQ*10)/10;
   const cycleDays=Math.round(EOQ/D*365);
   const dailyD=D/365;
-  const rop=Math.round(dailyD*LT+Z*Math.sqrt(LT)*dailyD*0.2);
+  const rop=Math.max(0,Math.round(dailyD*LT+Z*Math.sqrt(LT)*dailyD*0.2));
 
   document.getElementById('eoq-main-result').innerHTML=`
     <div class="eoq-label">Optimal Order Quantity</div>
@@ -1269,27 +1549,27 @@ function calcEOQ(){
     <div class="eoq-grid">
       <div class="eoq-item"><div class="eoq-item-val">$${orderCost.toLocaleString()}</div><div class="eoq-item-lbl">Annual order cost</div></div>
       <div class="eoq-item"><div class="eoq-item-val">$${holdCost.toLocaleString()}</div><div class="eoq-item-lbl">Annual holding cost</div></div>
-      <div class="eoq-item"><div class="eoq-item-val">${ordersPerYear}x</div><div class="eoq-item-lbl">Orders per year</div></div>
+      <div class="eoq-item"><div class="eoq-item-val">${ordersPerYear}×</div><div class="eoq-item-lbl">Orders per year</div></div>
       <div class="eoq-item"><div class="eoq-item-val">${cycleDays}d</div><div class="eoq-item-lbl">Order cycle</div></div>
     </div>`;
 }
 
 function calcSS(){
-  const dBar=parseFloat(document.getElementById('ss-d').value)||45;
-  const sigmaD=parseFloat(document.getElementById('ss-sd').value)||12;
-  const LT=parseFloat(document.getElementById('ss-lt').value)||18;
-  const sigmaLT=parseFloat(document.getElementById('ss-slt').value)||3;
+  const dBar=safeNum('ss-d',45);
+  const sigmaD=Math.max(0,parseFloat(document.getElementById('ss-sd').value)||12);
+  const LT=safeNum('ss-lt',18);
+  const sigmaLT=Math.max(0,parseFloat(document.getElementById('ss-slt').value)||3);
   const Z=parseFloat(document.getElementById('ss-sl').value)||1.65;
-  const RP=parseFloat(document.getElementById('ss-rp').value)||7;
+  const RP=safeNum('ss-rp',7);
 
-  // Combined sigma during lead time
   const sigmaLTD=Math.sqrt(LT*sigmaD*sigmaD+dBar*dBar*sigmaLT*sigmaLT);
-  const SS=Math.round(Z*sigmaLTD);
-  const ROP=Math.round(dBar*LT+SS);
-  const OUL=Math.round(dBar*(LT+RP)+SS); // Order-up-to level
-  const cvVal=(sigmaD/dBar*100).toFixed(1);
-  // Stockout probability (rough normal approximation)
-  const stockoutP=Math.round((1-(parseFloat(document.getElementById('ss-sl').value)/2.33))*100);
+  const SS=Math.max(0,Math.round(Z*sigmaLTD));
+  const ROP=Math.max(0,Math.round(dBar*LT+SS));
+  const OUL=Math.max(0,Math.round(dBar*(LT+RP)+SS));
+  const cvVal=dBar>0?(sigmaD/dBar*100).toFixed(1):'0.0';
+  // FIX #4: stockout prob based on Z → Φ(-z) not an exponential heuristic
+  const slZ=Z;
+  const stockoutP=Math.max(1,Math.min(99,Math.round((1-normalCDF(slZ))*100)));
 
   document.getElementById('ss-main-result').innerHTML=`
     <div class="eoq-label">Safety Stock Required</div>
@@ -1305,18 +1585,22 @@ function calcSS(){
 
 function renderBatchEOQ(){
   const body=document.getElementById('batch-eoq-table');
+  if(!state.inventory.length){
+    body.innerHTML='<tr><td colspan="10" class="empty-state">Load data to see batch optimisation</td></tr>';
+    return;
+  }
   body.innerHTML=state.inventory.map(i=>{
-    const weekly=i.weekly||50;
+    const weekly=Math.max(1,i.weekly||50);
     const annual=weekly*52;
-    const EOQ=Math.round(Math.sqrt(2*annual*200/6));
-    const sigma=weekly*0.2;
-    const SS=Math.round(1.65*Math.sqrt(i.days||14)*sigma);
-    const ROP=Math.round(weekly/7*(i.days||14)+SS);
-    const cvVal=(sigma/weekly*100).toFixed(1);
-    // Stockout probability based on days cover vs lead time
-    const stockoutP=Math.max(1,Math.min(99,Math.round(Math.exp(-(i.days/14))*100)));
+    const EOQ=Math.max(1,Math.round(Math.sqrt(2*annual*200/6)));
+    const sigmaD=weekly*0.2;
+    const SS=Math.max(0,Math.round(1.65*Math.sqrt(Math.max(1,i.days)||14)*sigmaD));
+    const ROP=Math.max(0,Math.round(weekly/7*(i.days||14)+SS));
+    const cvVal=(sigmaD/weekly*100).toFixed(1);
+    // FIX #4: proper stockout probability
+    const stockoutP=stockoutProbability(i.days||14, weekly);
     const {bc,label}=statusStyle(i.status);
-    const cvBadge=cvVal>30?'b-red':cvVal>20?'b-amber':cvVal>10?'b-blue':'b-green';
+    const cvBadge=parseFloat(cvVal)>30?'b-red':parseFloat(cvVal)>20?'b-amber':parseFloat(cvVal)>10?'b-blue':'b-green';
     return `<tr>
       <td class="mono">${i.sku}</td>
       <td>${i.name}</td>
@@ -1381,11 +1665,44 @@ function handleFile(e){
       state=parsed;
       document.getElementById('data-status').textContent='✓ EXCEL';
       document.getElementById('data-status').className='pill pill-green';
+      skuModelParams={};lastSKUIdx=0;
       populateSKUSelect();
       renderAll();
     }catch(err){alert('Could not parse file. Please use the provided Excel template.');}
   };
   reader.readAsBinaryString(file);
+}
+
+/* ════════════════════════════════════════════════════
+   FIX #9: CSV EXPORT
+════════════════════════════════════════════════════ */
+function exportTable(tableId,filename){
+  const tbl=document.getElementById(tableId);
+  if(!tbl){alert('No data to export.');return;}
+  const rows=[];
+  const thead=tbl.querySelector('thead');
+  if(thead){
+    const headers=[...thead.querySelectorAll('th')].map(th=>th.textContent.trim());
+    rows.push(headers.join(','));
+  }
+  const tbody=tbl.querySelector('tbody');
+  if(tbody){
+    [...tbody.querySelectorAll('tr')].forEach(tr=>{
+      const cells=[...tr.querySelectorAll('td')].map(td=>{
+        const text=td.textContent.trim().replace(/,/g,' ');
+        return `"${text}"`;
+      });
+      if(cells.length) rows.push(cells.join(','));
+    });
+  }
+  if(rows.length<=1){alert('No data to export.');return;}
+  const csv=rows.join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${filename}_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /* ════════════════════════════════════════════════════
@@ -1407,12 +1724,22 @@ function renderAll(){
 
 function statusStyle(s){
   const m={Critical:{bc:'b-red',label:'Critical'},Low:{bc:'b-amber',label:'Low'},Healthy:{bc:'b-green',label:'Healthy'},Excess:{bc:'b-blue',label:'Excess'}};
-  return m[s]||{bc:'b-gray',label:s};
+  return m[s]||{bc:'b-gray',label:s||'Unknown'};
 }
 function barColor(s){return s==='Critical'?'var(--red)':s==='Low'?'var(--amber)':s==='Excess'?'var(--blue)':'var(--teal)';}
 
 function renderDashboard(){
   const inv=state.inventory;
+  if(!inv.length){
+    ['d-total-stock','d-atrisk','d-excess','d-coverage','d-open-pos','d-best-model'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.textContent='—';
+    });
+    ['dash-chart','dash-market-health','dash-sku-breakdown','dash-supplier-perf','dash-alerts','dash-inv-table'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.innerHTML='<div class="empty-state"><div class="empty-state-icon">📊</div>Load data to see dashboard</div>';
+    });
+    return;
+  }
   const total=inv.reduce((s,i)=>s+i.stock,0);
   const atRisk=inv.filter(i=>i.status==='Critical'||i.status==='Low').length;
   const excess=inv.filter(i=>i.status==='Excess').length;
@@ -1461,14 +1788,15 @@ function renderDashboard(){
   document.getElementById('alert-count').textContent=critical.length+delayed.length;
   document.getElementById('dash-alerts').innerHTML=alerts.slice(0,4).map(a=>`<div class="risk-item"><div class="risk-icon" style="background:${a.bg}">${a.icon}</div><div class="risk-body"><div class="risk-title" style="font-size:11px">${a.text}</div></div><span class="badge ${a.bc}">${a.label}</span></div>`).join('');
 
-  // Inv table with CV and stockout prob
   document.getElementById('dash-inv-table').innerHTML=inv.map(i=>{
     const {bc,label}=statusStyle(i.status);
     const pct=Math.min(100,Math.round((i.days/60)*100));
-    const sigma=(i.weekly||50)*0.2;
-    const cvVal=((sigma/(i.weekly||50))*100).toFixed(0);
-    const stockoutP=Math.max(1,Math.min(99,Math.round(Math.exp(-(i.days/14))*100)));
-    const cvBadge=cvVal>30?'b-red':cvVal>20?'b-amber':cvVal>10?'b-blue':'b-green';
+    const weekly=Math.max(1,i.weekly||50);
+    const sigma=weekly*0.2;
+    const cvVal=((sigma/weekly)*100).toFixed(0);
+    // FIX #4: proper stockout probability
+    const stockoutP=stockoutProbability(i.days||14,weekly);
+    const cvBadge=parseFloat(cvVal)>30?'b-red':parseFloat(cvVal)>20?'b-amber':parseFloat(cvVal)>10?'b-blue':'b-green';
     return `<tr>
       <td class="mono">${i.sku}</td><td>${i.name}</td><td>${i.market}</td>
       <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(i.status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
@@ -1487,6 +1815,7 @@ function setFilter(f,btn){
   btn.classList.add('active');
   renderInventory();
 }
+
 function renderInventory(){
   const mkt=(document.getElementById('inv-market-filter')||{}).value||'all';
   const rows=state.inventory.filter(i=>{
@@ -1494,16 +1823,23 @@ function renderInventory(){
     const fMatch=invFilter==='all'||i.status.toLowerCase()===invFilter;
     return mMatch&&fMatch;
   });
-  document.getElementById('inv-body').innerHTML=rows.map(i=>{
+  const body=document.getElementById('inv-body');
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="12" class="empty-state">No items match current filter</td></tr>';
+    return;
+  }
+  body.innerHTML=rows.map(i=>{
     const {bc,label}=statusStyle(i.status);
     const pct=Math.min(100,Math.round((i.days/60)*100));
-    const weekly=i.weekly||50;
+    const weekly=Math.max(1,i.weekly||50);
     const annual=weekly*52;
-    const EOQ=Math.round(Math.sqrt(2*annual*200/6));
+    const EOQ=Math.max(1,Math.round(Math.sqrt(2*annual*200/6)));
     const sigma=weekly*0.2;
-    const SS=Math.round(1.65*Math.sqrt(i.days||14)*sigma);
+    const SS=Math.max(0,Math.round(1.65*Math.sqrt(Math.max(1,i.days||14))*sigma));
     const cvVal=(sigma/weekly*100).toFixed(1);
     const cvBadge=parseFloat(cvVal)>30?'b-red':parseFloat(cvVal)>20?'b-amber':parseFloat(cvVal)>10?'b-blue':'b-green';
+    // FIX #4: proper stockout probability
+    const stockoutP=stockoutProbability(i.days||14,weekly);
     return `<tr>
       <td class="mono">${i.sku}</td><td>${i.name}</td><td>${i.market}</td>
       <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(i.status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
@@ -1511,6 +1847,7 @@ function renderInventory(){
       <td class="mono" style="color:var(--teal)">${EOQ.toLocaleString()}</td>
       <td class="mono" style="color:var(--blue)">${SS.toLocaleString()}</td>
       <td><span class="badge ${cvBadge}">${cvVal}%</span></td>
+      <td><span class="badge ${stockoutP>50?'b-red':stockoutP>20?'b-amber':'b-green'}">${stockoutP}%</span></td>
       <td><span class="badge ${bc}">${label}</span></td>
     </tr>`;
   }).join('');
@@ -1518,11 +1855,15 @@ function renderInventory(){
 
 function renderSuppliers(){
   const s2b=s=>s==='Preferred'?'b-teal':s==='Active'?'b-blue':s==='Watch'?'b-amber':'b-red';
-  document.getElementById('sup-table').innerHTML=state.suppliers.map(s=>`<tr><td>${s.id}</td><td>${s.region}</td><td>${s.otd}%</td><td>${s.quality}%</td><td>${s.lead}d</td><td><span class="badge ${s2b(s.status)}">${s.status}</span></td></tr>`).join('');
+  document.getElementById('sup-table').innerHTML=state.suppliers.length
+    ?state.suppliers.map(s=>`<tr><td>${s.id}</td><td>${s.region}</td><td>${s.otd}%</td><td>${s.quality}%</td><td>${s.lead}d</td><td><span class="badge ${s2b(s.status)}">${s.status}</span></td></tr>`).join('')
+    :'<tr><td colspan="6" class="empty-state">No supplier data</td></tr>';
 }
 function renderPOs(){
   const p2b=s=>s==='In Transit'?'b-blue':s==='Confirmed'?'b-teal':s==='Delayed'?'b-red':'b-gray';
-  document.getElementById('po-body').innerHTML=state.pos.map(p=>`<tr><td class="mono">${p.po}</td><td>${p.supplier}</td><td class="mono">${p.sku}</td><td>${p.product}</td><td>${p.units.toLocaleString()}</td><td>${p.ordered}</td><td>${p.eta}</td><td><span class="badge ${p2b(p.status)}">${p.status}</span></td></tr>`).join('');
+  document.getElementById('po-body').innerHTML=state.pos.length
+    ?state.pos.map(p=>`<tr><td class="mono">${p.po}</td><td>${p.supplier}</td><td class="mono">${p.sku}</td><td>${p.product}</td><td>${p.units.toLocaleString()}</td><td>${p.ordered}</td><td>${p.eta}</td><td><span class="badge ${p2b(p.status)}">${p.status}</span></td></tr>`).join('')
+    :'<tr><td colspan="8" class="empty-state">No PO data</td></tr>';
 }
 function renderTimeline(){
   const items=[
@@ -1545,30 +1886,87 @@ function renderRisks(){
   ];
   document.getElementById('risk-list').innerHTML=risks.map(r=>`<div class="risk-item"><div class="risk-icon" style="background:${r.bg}">${r.icon}</div><div class="risk-body"><div class="risk-title">${r.title}</div><div class="risk-desc">${r.desc}</div></div><div class="risk-right"><span class="badge ${r.bc}">${r.label}</span></div></div>`).join('');
 }
+
+/* FIX #10: Forecast with SVG line chart */
 function runForecast(){
-  const base=parseInt(document.getElementById('fc-base').value)||1400;
+  const base=Math.max(1,parseInt(document.getElementById('fc-base').value)||1400);
   const growth=parseFloat(document.getElementById('fc-growth').value)||8;
   const seasonal=parseFloat(document.getElementById('fc-seasonal').value)||1;
   const promo=parseFloat(document.getElementById('fc-promo').value)||0;
   const bias=parseFloat(document.getElementById('fc-bias').value)||0;
   const mkt=document.getElementById('fc-market').value;
   const cat=document.getElementById('fc-cat').value;
+  const confSel=document.getElementById('fc-conf').value;
+  const confZ={'90%':1.645,'80%':1.282,'70%':1.036}[confSel]||1.645;
+  const confSpread=confZ*0.08;
+
   document.getElementById('fc-title').textContent=`13-Week Forecast — ${mkt}, ${cat}`;
+  document.getElementById('fc-chart-title').textContent=`${mkt} — ${cat} Forecast Chart`;
+
+  const fcData=[];
   let prev=0;
-  document.getElementById('fc-body').innerHTML=Array.from({length:13},(_,wi)=>{
+  const bodyRows=Array.from({length:13},(_,wi)=>{
     const w=wi+1;
     const adj=Math.round(base*(1+(growth/100)*(w/52))*seasonal*(1+(promo/100))*(1+(bias/100)));
-    const low=Math.round(adj*.85);const high=Math.round(adj*1.15);
+    const low=Math.round(adj*(1-confSpread*(1+wi*0.04)));
+    const high=Math.round(adj*(1+confSpread*(1+wi*0.04)));
     const conf=w<=4?'90%':w<=8?'80%':'70%';
     const chg=prev?((adj-prev)/prev*100).toFixed(1)+'%':'—';
     const chgStyle=prev&&adj>prev?'color:var(--teal)':prev&&adj<prev?'color:var(--red)':'';
     prev=adj;
+    fcData.push({adj,low,high});
     return `<tr><td>W${w}</td><td>${base.toLocaleString()}</td><td style="color:var(--teal);font-weight:600">${adj.toLocaleString()}</td><td style="color:var(--text3)">${low.toLocaleString()}</td><td style="color:var(--text3)">${high.toLocaleString()}</td><td><span class="badge b-blue">${conf}</span></td><td style="${chgStyle}">${chg}</td></tr>`;
-  }).join('');
+  });
+  document.getElementById('fc-body').innerHTML=bodyRows.join('');
+
+  // Render forecast SVG chart
+  renderForecastChart(fcData);
 }
+
+function renderForecastChart(fcData){
+  const svg=document.getElementById('fc-chart');
+  if(!svg||!fcData.length) return;
+  const W=600,H=140,pad={t:10,r:10,b:25,l:50};
+  const allVals=[...fcData.map(d=>d.adj),...fcData.map(d=>d.low),...fcData.map(d=>d.high)];
+  const minV=Math.min(...allVals)*0.9;
+  const maxV=Math.max(...allVals)*1.08;
+  const range=maxV-minV||1;
+  const n=fcData.length;
+  const sx=i=>pad.l+(i/(n-1))*(W-pad.l-pad.r);
+  const sy=v=>H-pad.b-((v-minV)/range)*(H-pad.t-pad.b);
+
+  const gridLines=Array.from({length:4},(_,i)=>{
+    const v=minV+(maxV-minV)*(i/3);
+    const y=sy(v);
+    const label=v>=1000?(Math.round(v/100)/10)+'k':Math.round(v);
+    return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="var(--border)" stroke-width="0.5"/>
+            <text x="${pad.l-4}" y="${y+3}" fill="var(--text3)" font-size="9" font-family="DM Mono,monospace" text-anchor="end">${label}</text>`;
+  }).join('');
+
+  // Confidence band path
+  const bandTop=fcData.map((d,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(d.high)}`).join(' ');
+  const bandBot=[...fcData].reverse().map((d,i)=>`${i===0?'M':'L'} ${sx(n-1-i)} ${sy(d.low)}`).join(' ');
+  const bandPath=`${bandTop} ${bandBot} Z`;
+
+  const linePath=fcData.map((d,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(d.adj)}`).join(' ');
+  const dots=fcData.map((d,i)=>`<circle cx="${sx(i)}" cy="${sy(d.adj)}" r="2.5" fill="var(--teal)"/>`).join('');
+  const xLabels=fcData.map((d,i)=>`<text x="${sx(i)}" y="${H-8}" fill="var(--text3)" font-size="8" font-family="DM Mono,monospace" text-anchor="middle">W${i+1}</text>`).join('');
+
+  svg.innerHTML=`
+    ${gridLines}
+    <path d="${bandPath}" fill="rgba(79,142,247,0.1)"/>
+    <path d="${linePath}" stroke="var(--teal)" stroke-width="2" fill="none"/>
+    ${dots}
+    ${xLabels}
+  `;
+}
+
 function renderFcExcel(){
   const body=document.getElementById('fc-excel-body');
-  if(!state.forecast.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem">Upload Excel to see imported forecast</td></tr>';return;}
+  if(!state.forecast.length){
+    body.innerHTML='<tr><td colspan="8" class="empty-state">Upload Excel to see imported forecast</td></tr>';
+    return;
+  }
   const total={apr:0,may:0,jun:0,jul:0,aug:0,sep:0};
   const rows=state.forecast.map(r=>{
     const tot=r.apr+r.may+r.jun+r.jul+r.aug+r.sep;
@@ -1586,21 +1984,15 @@ function renderFcExcel(){
 ['fc-market','fc-cat','fc-horizon','fc-conf'].forEach(id=>{
   document.getElementById(id).addEventListener('change',runForecast);
 });
-renderBlank();
 
-function renderBlank(){
+// Initialise with blank state (no demo preloaded)
+(function init(){
   state={inventory:[],forecast:[],pos:[],suppliers:[]};
   document.getElementById('data-status').textContent='NO DATA';
   document.getElementById('data-status').className='pill pill-amber';
-  ['d-accuracy','d-coverage','d-atrisk','d-total-stock','d-open-pos','d-excess','d-best-model'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.textContent='—';
-  });
-  ['dash-chart','dash-market-health','dash-sku-breakdown','dash-supplier-perf','dash-alerts','dash-inv-table','inv-body','sup-table','po-body','prod-tl','risk-list','fc-body','fc-excel-body','batch-eoq-table','eoq-main-result','ss-main-result'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.innerHTML='<div style="text-align:center;color:var(--text3);padding:1.5rem;font-size:12px">Upload Excel or click Load Demo to get started</div>';
-  });
-}
+  renderAll();
+  runForecast(); // forecast builder always works independently
+})();
 </script>
 </body>
 </html>
