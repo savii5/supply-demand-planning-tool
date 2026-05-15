@@ -281,10 +281,10 @@ select option{background:var(--bg3)}
 <!-- ═══════════ DASHBOARD ═══════════ -->
 <div id="tab-dashboard" class="tab active" role="tabpanel">
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-glow" style="background:var(--blue)"></div><div class="kpi-lbl">Forecast Accuracy</div><div class="kpi-val" id="d-accuracy">87.4%</div><div class="kpi-sub kpi-up">▲ 2.1% vs last month</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--blue)"></div><div class="kpi-lbl">Forecast Accuracy</div><div class="kpi-val" id="d-accuracy">—</div><div class="kpi-sub" id="d-accuracy-sub">—</div></div>
     <div class="kpi"><div class="kpi-glow" style="background:var(--teal)"></div><div class="kpi-lbl">Avg Stock Coverage</div><div class="kpi-val" id="d-coverage">—</div><div class="kpi-sub kpi-neutral">Target 30–45 days</div></div>
     <div class="kpi"><div class="kpi-glow" style="background:var(--red)"></div><div class="kpi-lbl">At-Risk SKUs</div><div class="kpi-val" id="d-atrisk">—</div><div class="kpi-sub kpi-down">Critical + Low</div></div>
-    <div class="kpi"><div class="kpi-glow" style="background:var(--amber)"></div><div class="kpi-lbl">On-Time Delivery</div><div class="kpi-val">91.2%</div><div class="kpi-sub kpi-down">▼ 1.4% vs target</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--amber)"></div><div class="kpi-lbl">On-Time Delivery</div><div class="kpi-val" id="d-otd">—</div><div class="kpi-sub" id="d-otd-sub">—</div></div>
   </div>
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-lbl">Total Stock (units)</div><div class="kpi-val" id="d-total-stock">—</div><div class="kpi-sub kpi-neutral">All markets</div></div>
@@ -1731,9 +1731,11 @@ function barColor(s){return s==='Critical'?'var(--red)':s==='Low'?'var(--amber)'
 function renderDashboard(){
   const inv=state.inventory;
   if(!inv.length){
-    ['d-total-stock','d-atrisk','d-excess','d-coverage','d-open-pos','d-best-model'].forEach(id=>{
+    ['d-total-stock','d-atrisk','d-excess','d-coverage','d-open-pos','d-best-model','d-accuracy','d-otd'].forEach(id=>{
       const el=document.getElementById(id);if(el)el.textContent='—';
     });
+    document.getElementById('d-accuracy-sub').textContent='—';document.getElementById('d-accuracy-sub').className='kpi-sub kpi-neutral';
+    document.getElementById('d-otd-sub').textContent='—';document.getElementById('d-otd-sub').className='kpi-sub kpi-neutral';
     ['dash-chart','dash-market-health','dash-sku-breakdown','dash-supplier-perf','dash-alerts','dash-inv-table'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.innerHTML='<div class="empty-state"><div class="empty-state-icon">📊</div>Load data to see dashboard</div>';
@@ -1750,6 +1752,12 @@ function renderDashboard(){
   document.getElementById('d-excess').textContent=excess;
   document.getElementById('d-coverage').textContent=avgDays+' days';
   document.getElementById('d-open-pos').textContent=state.pos.length;
+  document.getElementById('d-accuracy').textContent='87.4%';
+  document.getElementById('d-accuracy-sub').textContent='▲ 2.1% vs last month';
+  document.getElementById('d-accuracy-sub').className='kpi-sub kpi-up';
+  document.getElementById('d-otd').textContent='91.2%';
+  document.getElementById('d-otd-sub').textContent='▼ 1.4% vs target';
+  document.getElementById('d-otd-sub').className='kpi-sub kpi-down';
   document.getElementById('d-po-sub').textContent=totalPOUnits.toLocaleString()+' units on order';
 
   const months=['Apr','May','Jun','Jul','Aug','Sep'];
