@@ -188,6 +188,19 @@ select option{background:var(--bg3)}
 .filter-pill{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
 .filter-pill.active{background:rgba(79,142,247,.12);color:var(--blue);border-color:rgba(79,142,247,.3)}
 .filter-pill:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.health-period-row{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 10px}
+.health-period-btn{padding:4px 10px;font-size:10px;border:1px solid var(--border);border-radius:16px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
+.health-period-btn.active{background:rgba(34,211,164,.1);color:var(--teal);border-color:rgba(34,211,164,.28)}
+.health-period-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.health-proj-note{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.market-health-content{transition:opacity .2s ease,transform .2s ease}
+.market-health-content.market-health-anim{animation:marketHealthFade .24s ease}
+.market-health-row{margin-bottom:10px}
+.market-health-meta{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}
+.market-health-status{display:flex;gap:6px;align-items:center}
+.market-health-trend{font-size:11px;font-family:var(--font-mono)}
+.market-health-insight{font-size:10px;color:var(--text2);font-family:var(--font-mono);margin-top:4px}
+@keyframes marketHealthFade{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── SVG CHART ── */
 .line-chart-wrap{width:100%;overflow:hidden;border-radius:var(--r)}
@@ -302,8 +315,17 @@ select option{background:var(--bg3)}
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Inventory Health by Market</div>
-      <div id="dash-market-health"></div>
+      <div class="card-title">Inventory Health by Market <span class="ct-badge b-blue">Leading Indicator</span></div>
+      <div class="health-period-row" role="tablist" aria-label="Inventory health projection period">
+        <button class="health-period-btn active" id="health-period-0" onclick="setHealthProjectionPeriod(0)">Today</button>
+        <button class="health-period-btn" id="health-period-3" onclick="setHealthProjectionPeriod(3)">3mo</button>
+        <button class="health-period-btn" id="health-period-6" onclick="setHealthProjectionPeriod(6)">6mo</button>
+        <button class="health-period-btn" id="health-period-12" onclick="setHealthProjectionPeriod(12)">12mo</button>
+      </div>
+      <div class="health-proj-note">
+        <span class="badge b-gray" id="dash-market-health-confidence">Confidence: High · Current data</span>
+      </div>
+      <div id="dash-market-health" class="market-health-content"></div>
     </div>
   </div>
   <div class="three-col">
@@ -768,7 +790,7 @@ const DEMO_FC=[
 ];
 const DEMO_POS=[
   {po:'PO-88412',supplier:'NORD-03',sku:'SKU-3317',product:'Smart Keyboard',units:2400,ordered:'Apr 28',eta:'May 8',status:'In Transit'},
-  {po:'PO-88491',supplier:'ASIA-07',sku:'SKU-2041',product:'Wireless Earbuds Pro',units:5000,ordered:'May 1',eta:'May 25',status:'Confirmed'},
+  {po:'PO-88491',supplier:'ASIA-07',sku:'SKU-2041',product:'Wireless Earbuds Pro',units:5000,ordered:'May 1',eta:'Dec 5',status:'Pending'},
   {po:'PO-88502',supplier:'APAC-05',sku:'SKU-1892',product:'USB-C Hub 7-in-1',units:3200,ordered:'May 2',eta:'May 22',status:'Confirmed'},
   {po:'PO-88399',supplier:'EMEA-12',sku:'SKU-2210',product:'Webcam 4K',units:1800,ordered:'Apr 21',eta:'May 5',status:'Delayed'},
   {po:'PO-88517',supplier:'NORD-03',sku:'SKU-4401',product:'Mechanical Mouse',units:4000,ordered:'May 3',eta:'May 21',status:'Pending'},
@@ -795,6 +817,7 @@ function generateHistory(weekly,n=52){
 
 let state={inventory:[],forecast:[],pos:[],suppliers:[]};
 let currentSKUHistory=[];
+let dashboardHealthPeriod=0;
 
 // FIX #8: persist model params per SKU index
 let skuModelParams={};
@@ -1727,6 +1750,92 @@ function statusStyle(s){
   return m[s]||{bc:'b-gray',label:s||'Unknown'};
 }
 function barColor(s){return s==='Critical'?'var(--red)':s==='Low'?'var(--amber)':s==='Excess'?'var(--blue)':'var(--teal)';}
+function healthStatusFromCoverage(days){
+  if(days>60) return 'Excess';
+  if(days>30) return 'Healthy';
+  if(days>=7) return 'Low';
+  return 'Critical';
+}
+function healthRank(status){
+  const ranks={Critical:0,Low:1,Healthy:2,Excess:3};
+  return ranks[status]??0;
+}
+function healthTrendArrow(todayStatus,projectedStatus){
+  const d=healthRank(projectedStatus)-healthRank(todayStatus);
+  return d>0?'↗':d<0?'↘':'→';
+}
+function setHealthProjectionPeriod(months){
+  dashboardHealthPeriod=months;
+  [0,3,6,12].forEach(p=>{
+    const btn=document.getElementById(`health-period-${p}`);
+    if(btn) btn.classList.toggle('active',p===months);
+  });
+  renderDashboard();
+}
+function monthIdxFromText(txt){
+  const m={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  return m[(txt||'').slice(0,3).toLowerCase()];
+}
+function etaOffsetMonths(eta){
+  const base=monthIdxFromText('apr');
+  const raw=(eta||'').trim().split(/\s+/)[0]||'';
+  const idx=monthIdxFromText(raw);
+  if(idx===undefined) return 12;
+  return idx>=base?idx-base:idx+12-base;
+}
+function getProjectionSeries(market,months){
+  const row=state.forecast.find(f=>f.market===market);
+  if(!row){
+    const inv=state.inventory.filter(i=>i.market===market);
+    return new Array(Math.max(1,months)).fill(inv.reduce((s,i)=>s+(i.weekly||0),0)*4.33);
+  }
+  const keys=['apr','may','jun','jul','aug','sep'];
+  const s=keys.map(k=>Math.max(0,row[k]||0));
+  if(months<=s.length) return s.slice(0,months);
+  const deltas=s.slice(1).map((v,i)=>v-s[i]);
+  const avgDelta=deltas.length?deltas.reduce((a,b)=>a+b,0)/deltas.length:0;
+  while(s.length<months){
+    s.push(Math.max(0,Math.round(s[s.length-1]+avgDelta)));
+  }
+  return s;
+}
+function marketProjection(market,periodMonths){
+  const invRows=state.inventory.filter(i=>i.market===market);
+  const stockNow=invRows.reduce((s,i)=>s+i.stock,0);
+  const weeklyNow=Math.max(1,invRows.reduce((s,i)=>s+(i.weekly||0),0));
+  const daysNow=stockNow/weeklyNow;
+  const statusNow=healthStatusFromCoverage(daysNow);
+  if(periodMonths===0){
+    return {days:daysNow,stock:stockNow,weekly:weeklyNow,status:statusNow,todayStatus:statusNow,trend:'→',incomingPO:0};
+  }
+  const weeks=Math.round(periodMonths*(52/12));
+  const baselineSeries=getProjectionSeries(market,3);
+  const periodSeries=getProjectionSeries(market,periodMonths);
+  const baselineWeekly=Math.max(1,baselineSeries.reduce((s,v)=>s+v,0)/13);
+  const periodWeeklyRaw=Math.max(1,periodSeries.reduce((s,v)=>s+v,0)/weeks);
+  const projectedWeekly=Math.max(1,weeklyNow*(periodWeeklyRaw/baselineWeekly));
+  const incomingPO=state.pos.filter(p=>{
+    if(p.sku && !invRows.some(i=>i.sku===p.sku)) return false;
+    return etaOffsetMonths(p.eta)<=periodMonths;
+  }).reduce((s,p)=>s+(p.units||0),0);
+  const projectedStock=stockNow-(weeks*projectedWeekly)+incomingPO;
+  const projectedDays=Math.max(0,projectedStock/Math.max(1,projectedWeekly));
+  const projectedStatus=healthStatusFromCoverage(projectedDays);
+  return {days:projectedDays,stock:projectedStock,weekly:projectedWeekly,status:projectedStatus,todayStatus:statusNow,trend:healthTrendArrow(statusNow,projectedStatus),incomingPO};
+}
+function projectionSummary(statusNow,statusFuture,months){
+  if(months===0) return 'Baseline (today)';
+  if(statusFuture==='Critical' && statusNow!=='Critical') return `⚠️ Will turn Critical in ${months} months`;
+  if(healthRank(statusFuture)>healthRank(statusNow)) return `↗ Improving by ${months} months`;
+  if(healthRank(statusFuture)<healthRank(statusNow)) return `↘ Degrading by ${months} months`;
+  return statusFuture==='Healthy' || statusFuture==='Excess' ? '✓ Will remain Healthy' : `⚠️ Will remain ${statusFuture}`;
+}
+function projectionConfidence(months){
+  if(months===0) return 'Confidence: High · Current data';
+  if(months===3) return 'Confidence: High · Forecast trend + incoming POs';
+  if(months===6) return 'Confidence: Medium · Assumes current supply plan';
+  return 'Confidence: Scenario · Assumes stable trend and PO execution';
+}
 
 function renderDashboard(){
   const inv=state.inventory;
@@ -1771,10 +1880,29 @@ function renderDashboard(){
     return `<div class="col-group"><div class="col-bars"><div class="col-bar" style="height:${dh}px;background:var(--blue)" title="${m} D:${demand[i].toLocaleString()}"></div><div class="col-bar" style="height:${sh}px;background:var(--teal)" title="${m} S:${supply[i].toLocaleString()}"></div></div><div class="col-label">${m}</div></div>`;
   }).join('');
 
-  const markets=['EMEA','North America','APAC','LATAM','MEA'];
-  const mColors=['var(--blue)','var(--teal)','var(--amber)','var(--red)','var(--purple)'];
-  const mH=markets.map(m=>{const mi=inv.filter(i=>i.market===m);return mi.length?Math.min(100,Math.round(mi.reduce((s,i)=>s+Math.min(100,(i.days/45)*100),0)/mi.length)):60;});
-  document.getElementById('dash-market-health').innerHTML=markets.map((m,i)=>`<div class="prog-row"><div class="prog-label">${m}</div><div class="prog-bg"><div class="prog-fill" style="width:${mH[i]}%;background:${mColors[i]}"></div></div><div class="prog-pct" style="color:${mColors[i]}">${mH[i]}%</div></div>`).join('');
+  const markets=[...new Set(inv.map(i=>i.market))];
+  const healthRows=markets.map(m=>{
+    const p=marketProjection(m,dashboardHealthPeriod);
+    const pct=Math.max(0,Math.min(100,Math.round((p.days/60)*100)));
+    const {bc,label}=statusStyle(p.status);
+    const col=barColor(p.status);
+    const insight=projectionSummary(p.todayStatus,p.status,dashboardHealthPeriod);
+    return `<div class="market-health-row">
+      <div class="market-health-meta">
+        <div class="market-health-status"><span class="prog-label" style="min-width:auto">${m}</span><span class="badge ${bc}">${label}</span><span class="market-health-trend">${p.trend}</span></div>
+        <div class="prog-pct" style="color:${col}">${Math.round(p.days)}d</div>
+      </div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="market-health-insight">${insight}${dashboardHealthPeriod?` · PO +${Math.round(p.incomingPO).toLocaleString()}u`:''}</div>
+    </div>`;
+  });
+  const marketHealthEl=document.getElementById('dash-market-health');
+  marketHealthEl.classList.remove('market-health-anim');
+  marketHealthEl.innerHTML=healthRows.join('');
+  void marketHealthEl.offsetWidth;
+  marketHealthEl.classList.add('market-health-anim');
+  const confEl=document.getElementById('dash-market-health-confidence');
+  if(confEl) confEl.textContent=projectionConfidence(dashboardHealthPeriod);
 
   const statuses=['Healthy','Low','Critical','Excess'];
   const sColors=['var(--teal)','var(--amber)','var(--red)','var(--blue)'];
