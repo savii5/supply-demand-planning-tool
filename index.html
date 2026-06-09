@@ -818,6 +818,10 @@ function generateHistory(weekly,n=52){
 let state={inventory:[],forecast:[],pos:[],suppliers:[]};
 let currentSKUHistory=[];
 let dashboardHealthPeriod=0;
+const MONTH_KEYS=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const MONTHS_IN_YEAR=12;
+const WEEKS_PER_MONTH=52/12;
+const BASELINE_PROJECTION_MONTHS=3;
 
 // FIX #8: persist model params per SKU index
 let skuModelParams={};
@@ -1773,27 +1777,32 @@ function setHealthProjectionPeriod(months){
   renderDashboard();
 }
 function monthIdxFromText(txt){
-  const m={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
-  return m[(txt||'').slice(0,3).toLowerCase()];
+  return MONTH_KEYS.indexOf((txt||'').slice(0,3).toLowerCase());
+}
+function forecastBaseMonth(){
+  const row=state.forecast[0]||{};
+  const firstKey=MONTH_KEYS.find(k=>typeof row[k]==='number');
+  return firstKey||MONTH_KEYS[new Date().getMonth()];
 }
 function etaOffsetMonths(eta){
-  const base=monthIdxFromText('apr');
+  const base=monthIdxFromText(forecastBaseMonth());
   const raw=(eta||'').trim().split(/\s+/)[0]||'';
   const idx=monthIdxFromText(raw);
-  if(idx===undefined) return 12;
-  return idx>=base?idx-base:idx+12-base;
+  if(idx<0) return Number.POSITIVE_INFINITY;
+  return idx>=base?idx-base:idx+MONTHS_IN_YEAR-base;
 }
 function getProjectionSeries(market,months){
   const row=state.forecast.find(f=>f.market===market);
   if(!row){
     const inv=state.inventory.filter(i=>i.market===market);
-    return new Array(Math.max(1,months)).fill(inv.reduce((s,i)=>s+(i.weekly||0),0)*4.33);
+    return new Array(Math.max(1,months)).fill(inv.reduce((s,i)=>s+(i.weekly||0),0)*WEEKS_PER_MONTH);
   }
-  const keys=['apr','may','jun','jul','aug','sep'];
+  const keys=MONTH_KEYS.filter(k=>typeof row[k]==='number');
   const s=keys.map(k=>Math.max(0,row[k]||0));
   if(months<=s.length) return s.slice(0,months);
   const deltas=s.slice(1).map((v,i)=>v-s[i]);
   const avgDelta=deltas.length?deltas.reduce((a,b)=>a+b,0)/deltas.length:0;
+  // Simple linear extension for demo projection horizons beyond imported months.
   while(s.length<months){
     s.push(Math.max(0,Math.round(s[s.length-1]+avgDelta)));
   }
@@ -1808,13 +1817,16 @@ function marketProjection(market,periodMonths){
   if(periodMonths===0){
     return {days:daysNow,stock:stockNow,weekly:weeklyNow,status:statusNow,todayStatus:statusNow,trend:'→',incomingPO:0};
   }
-  const weeks=Math.round(periodMonths*(52/12));
-  const baselineSeries=getProjectionSeries(market,3);
+  const weeks=Math.round(periodMonths*WEEKS_PER_MONTH);
+  const baselineWeeks=Math.round(BASELINE_PROJECTION_MONTHS*WEEKS_PER_MONTH);
+  const baselineSeries=getProjectionSeries(market,BASELINE_PROJECTION_MONTHS);
   const periodSeries=getProjectionSeries(market,periodMonths);
-  const baselineWeekly=Math.max(1,baselineSeries.reduce((s,v)=>s+v,0)/13);
+  // Normalize forecast scale to today's weekly usage by comparing baseline and selected horizon trends.
+  const baselineWeekly=Math.max(1,baselineSeries.reduce((s,v)=>s+v,0)/baselineWeeks);
   const periodWeeklyRaw=Math.max(1,periodSeries.reduce((s,v)=>s+v,0)/weeks);
   const projectedWeekly=Math.max(1,weeklyNow*(periodWeeklyRaw/baselineWeekly));
   const incomingPO=state.pos.filter(p=>{
+    // POs are applied to a market when their SKU exists in that market's inventory rows.
     if(p.sku && !invRows.some(i=>i.sku===p.sku)) return false;
     return etaOffsetMonths(p.eta)<=periodMonths;
   }).reduce((s,p)=>s+(p.units||0),0);
@@ -1828,7 +1840,7 @@ function projectionSummary(statusNow,statusFuture,months){
   if(statusFuture==='Critical' && statusNow!=='Critical') return `⚠️ Will turn Critical in ${months} months`;
   if(healthRank(statusFuture)>healthRank(statusNow)) return `↗ Improving by ${months} months`;
   if(healthRank(statusFuture)<healthRank(statusNow)) return `↘ Degrading by ${months} months`;
-  return statusFuture==='Healthy' || statusFuture==='Excess' ? '✓ Will remain Healthy' : `⚠️ Will remain ${statusFuture}`;
+  return healthRank(statusFuture)>=healthRank('Healthy') ? `✓ Will remain ${statusFuture}` : `⚠️ Will remain ${statusFuture}`;
 }
 function projectionConfidence(months){
   if(months===0) return 'Confidence: High · Current data';
@@ -1899,6 +1911,7 @@ function renderDashboard(){
   const marketHealthEl=document.getElementById('dash-market-health');
   marketHealthEl.classList.remove('market-health-anim');
   marketHealthEl.innerHTML=healthRows.join('');
+  // Force reflow so browser recalculates styles before re-adding animation class; this reliably restarts the transition on period switch.
   void marketHealthEl.offsetWidth;
   marketHealthEl.classList.add('market-health-anim');
   const confEl=document.getElementById('dash-market-health-confidence');
