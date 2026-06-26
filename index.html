@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S&D Planning — Statistical Engine</title>
-<!-- FIX #1: Google Fonts moved to <link> tags (was @import after CSS rules = invalid, silently ignored) -->
+<title>S&D Planning Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -12,67 +11,125 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0D0F14;--bg2:#13161E;--bg3:#1A1E28;--bg4:#222638;
-  --border:#2A2F42;--border2:#363D55;
-  --text:#F0F2F8;--text2:#8B91A8;--text3:#5A607A;
+  --bg:#080A0F;--bg2:#10131C;--bg3:#161A26;--bg4:#1D2233;
+  --border:#262C42;--border2:#34394F;
+  --text:#F2F4FA;--text2:#8C92AC;--text3:#565C78;
   --blue:#4F8EF7;--blue2:#2563EB;--blue3:#1E4FC7;
-  --teal:#22D3A4;--teal2:#0D9E77;
-  --amber:#F59E0B;--amber2:#B45309;
-  --red:#F87171;--red2:#DC2626;
+  --teal:#22E0B0;--teal2:#0D9E77;
+  --amber:#F5A623;--amber2:#B45309;
+  --red:#FB7185;--red2:#DC2626;
   --green:#4ADE80;--green2:#16A34A;
   --purple:#A78BFA;--purple2:#7C3AED;
   --pink:#F472B6;
-  --r:10px;--r2:14px;--r3:20px;
+  --grad-1:#4F8EF7;--grad-2:#22E0B0;--grad-3:#A78BFA;
+  --accent-grad:linear-gradient(115deg,var(--grad-1) 0%,var(--grad-2) 52%,var(--grad-3) 100%);
+  --r:4px;--r2:6px;--r3:10px;
+  --notch:10px;
   --font:'Inter',sans-serif;
   --font-mono:'DM Mono',monospace;
   --font-display:'Syne',sans-serif;
-  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --shadow:0 8px 32px rgba(0,0,0,0.5);
+  --ease:cubic-bezier(.16,.8,.3,1);
 }
 html{scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5}
-.shell{max-width:1200px;margin:0 auto;padding:1.5rem}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+body{
+  font-family:var(--font);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,142,247,.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 10%, rgba(34,224,176,.07), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+}
+.shell{max-width:1280px;margin:0 auto;padding:1.5rem}
+
+/* angled-corner "engineered" card geometry: a clipped top-right and
+   bottom-left notch, used consistently as the surface signature */
+.notched{
+  clip-path:polygon(0 0,calc(100% - var(--notch)) 0,100% var(--notch),100% 100%,var(--notch) 100%,0 calc(100% - var(--notch)));
+}
 
 /* ── HEADER ── */
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:12px}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--teal));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.logo-name{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text)}
-.logo-tag{font-size:10px;color:var(--text3);font-family:var(--font-mono);letter-spacing:.08em;margin-top:1px}
+.logo-icon{
+  width:38px;height:38px;background:var(--accent-grad);background-size:200% 200%;
+  display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+  animation:gradShift 8s ease infinite;
+}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.logo-name{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.logo-tag{font-size:10px;color:var(--text3);font-family:var(--font-mono);letter-spacing:.12em;margin-top:2px}
 .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.pill{font-size:10px;padding:3px 10px;border-radius:20px;font-family:var(--font-mono);font-weight:500;letter-spacing:.04em}
+.pill{font-size:10px;padding:4px 11px;border-radius:var(--r);font-family:var(--font-mono);font-weight:500;letter-spacing:.05em;position:relative}
 .pill-blue{background:rgba(79,142,247,.15);color:var(--blue);border:1px solid rgba(79,142,247,.3)}
-.pill-green{background:rgba(34,211,164,.12);color:var(--teal);border:1px solid rgba(34,211,164,.25)}
-.pill-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
-.upload-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg3);color:var(--text);cursor:pointer;font-family:var(--font);transition:all .2s}
-.upload-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.08)}
-.btn-ghost{padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .2s}
+.pill-green{background:rgba(34,224,176,.12);color:var(--teal);border:1px solid rgba(34,224,176,.28)}
+.pill-amber{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.28)}
+.upload-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg3);color:var(--text);cursor:pointer;font-family:var(--font);transition:all .2s var(--ease)}
+.upload-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.08);transform:translateY(-1px)}
+.btn-ghost{padding:7px 14px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--r);background:none;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .2s var(--ease)}
 .btn-ghost:hover{color:var(--text);border-color:var(--border2)}
 
+
 /* ── NAV ── */
-/* FIX #11: keyboard nav support via tabindex + focus styles */
-.nav-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:1.5rem;padding:4px;display:flex;gap:2px;overflow-x:auto}
-.nav-btn{padding:8px 16px;font-size:12px;font-weight:500;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:8px;white-space:nowrap;transition:all .2s;font-family:var(--font)}
-.nav-btn.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.nav-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:1.5rem;padding:4px;display:flex;gap:2px;overflow-x:auto;position:relative}
+.nav-btn{padding:8px 16px;font-size:12px;font-weight:500;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:var(--r);white-space:nowrap;transition:color .2s var(--ease);font-family:var(--font);position:relative}
+.nav-btn.active{color:var(--text)}
+.nav-btn.active::after{content:'';position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--accent-grad);border-radius:2px;animation:navIn .25s var(--ease)}
+@keyframes navIn{from{opacity:0;transform:scaleX(.4)}to{opacity:1;transform:scaleX(1)}}
 .nav-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.04)}
 .nav-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 
-.tab{display:none}.tab.active{display:block}
+.tab{display:none}
+.tab.active{display:block;animation:tabIn .3s var(--ease)}
+@keyframes tabIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── CARDS ── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem;margin-bottom:1rem}
-.card-title{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
-.card-title .ct-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--font-mono);font-weight:500}
+.card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:1.25rem;margin-bottom:1rem;position:relative;overflow:hidden;
+  transition:border-color .25s var(--ease),transform .25s var(--ease);
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent-grad);opacity:0;transition:opacity .3s var(--ease);
+}
+.card:hover{border-color:var(--border2)}
+.card:hover::before{opacity:.55}
+.card-title{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:8px;letter-spacing:-.005em}
+.card-title .ct-badge{font-size:10px;padding:2px 7px;border-radius:var(--r);font-family:var(--font-mono);font-weight:500}
+.card-caption{font-size:11px;color:var(--text2);margin:-.5rem 0 1rem;line-height:1.6}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
 .four-col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem}
 
-/* ── KPI CARDS ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.125rem;position:relative;overflow:hidden;transition:border-color .2s}
-.kpi:hover{border-color:var(--border2)}
-.kpi-glow{position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;filter:blur(30px);opacity:.15}
-.kpi-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-family:var(--font-mono)}
-.kpi-val{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text);line-height:1}
+/* ── KPI CARDS (signature element) ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:1rem}
+.kpi{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:1rem 1.125rem;position:relative;overflow:hidden;
+  transition:border-color .25s var(--ease),transform .25s var(--ease);
+  animation:kpiRise .45s var(--ease) backwards;
+}
+.kpi:nth-child(1){animation-delay:.02s}.kpi:nth-child(2){animation-delay:.07s}
+.kpi:nth-child(3){animation-delay:.12s}.kpi:nth-child(4){animation-delay:.17s}
+.kpi:nth-child(5){animation-delay:.22s}.kpi:nth-child(6){animation-delay:.27s}
+@keyframes kpiRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.kpi::before{
+  content:'';position:absolute;inset:0;padding:1px;border-radius:var(--r2);
+  background:var(--accent-grad);background-size:220% 220%;
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .3s var(--ease);pointer-events:none;
+}
+.kpi:hover{transform:translateY(-2px)}
+.kpi:hover::before{opacity:1;animation:gradShift 4s ease infinite}
+.kpi-glow{position:absolute;top:-10px;right:-10px;width:70px;height:70px;border-radius:50%;filter:blur(32px);opacity:.18}
+.kpi-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px;font-family:var(--font-mono)}
+.kpi-val{font-family:var(--font-display);font-size:23px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .kpi-sub{font-size:11px;margin-top:5px;color:var(--text3)}
 .kpi-up{color:var(--teal)}.kpi-down{color:var(--red)}.kpi-neutral{color:var(--text3)}
 
@@ -87,13 +144,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 /* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;font-family:var(--font-mono);letter-spacing:.02em}
-.b-red{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}
-.b-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.b-red{background:rgba(251,113,133,.12);color:var(--red);border:1px solid rgba(251,113,133,.2)}
+.b-amber{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
 .b-green{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
 .b-blue{background:rgba(79,142,247,.12);color:var(--blue);border:1px solid rgba(79,142,247,.2)}
 .b-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
-.b-teal{background:rgba(34,211,164,.1);color:var(--teal);border:1px solid rgba(34,211,164,.2)}
+.b-teal{background:rgba(34,224,176,.1);color:var(--teal);border:1px solid rgba(34,224,176,.2)}
 .b-gray{background:rgba(139,145,168,.1);color:var(--text2);border:1px solid var(--border)}
+.b-pink{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)}
 
 /* ── BARS ── */
 .bar-wrap{display:flex;align-items:center;gap:8px}
@@ -119,34 +177,41 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);font-family:var(--font-mono)}
 .leg-dot{width:8px;height:8px;border-radius:2px}
 
-/* ── STAT CHART ── */
-/* FIX #12: use xMidYMid meet for non-distorting responsive charts */
-.stat-chart{width:100%;height:120px}
+.stat-chart{width:100%;height:140px}
 
 /* ── FORM ── */
 .input-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
 .field label{display:block;font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--font-mono)}
-input,select{width:100%;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--text);outline:none;font-family:var(--font);transition:border-color .2s}
-input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(79,142,247,.1)}
+input,select{width:100%;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--text);outline:none;font-family:var(--font);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,142,247,.12)}
 select option{background:var(--bg3)}
 
 /* ── BUTTONS ── */
-.btn-primary{padding:8px 18px;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--blue2),var(--blue3));color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .2s;letter-spacing:.02em}
-.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary{
+  padding:8px 18px;font-size:12px;font-weight:600;color:#fff;border:none;border-radius:var(--r);
+  cursor:pointer;font-family:var(--font);transition:all .2s var(--ease);letter-spacing:.02em;
+  background:var(--accent-grad);background-size:200% 200%;background-position:0% 50%;
+  position:relative;
+}
+.btn-primary:hover{background-position:100% 50%;transform:translateY(-1px);box-shadow:0 4px 18px rgba(79,142,247,.3)}
 .btn-primary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.btn-sec{padding:8px 14px;font-size:12px;font-weight:500;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-sec{padding:8px 14px;font-size:12px;font-weight:500;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:all .2s var(--ease)}
 .btn-sec:hover{color:var(--text);border-color:var(--border2)}
-.btn-sm{padding:4px 10px;font-size:10px;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
+.btn-sm{padding:4px 10px;font-size:10px;border:1px solid var(--border);border-radius:var(--r);background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s var(--ease)}
 .btn-sm:hover{color:var(--text);border-color:var(--border2);background:var(--bg3)}
-.btn-export{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;font-size:11px;font-weight:500;background:rgba(34,211,164,.1);color:var(--teal);border:1px solid rgba(34,211,164,.25);border-radius:var(--r);cursor:pointer;font-family:var(--font-mono);transition:all .2s}
-.btn-export:hover{background:rgba(34,211,164,.18);border-color:var(--teal)}
+.btn-sm.active{background:rgba(79,142,247,.12);color:var(--blue);border-color:rgba(79,142,247,.3)}
+.btn-export{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;font-size:11px;font-weight:500;background:rgba(34,224,176,.1);color:var(--teal);border:1px solid rgba(34,224,176,.25);border-radius:var(--r);cursor:pointer;font-family:var(--font-mono);transition:all .2s var(--ease)}
+.btn-export:hover{background:rgba(34,224,176,.18);border-color:var(--teal);transform:translateY(-1px)}
 .btn-export:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px;flex-wrap:wrap}
+.section-title{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-.01em;position:relative;padding-left:14px}
+.section-title::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;background:var(--accent-grad);border-radius:2px}
+.section-sub{font-size:11px;color:var(--text2);margin-top:2px;font-family:var(--font);padding-left:14px}
 
 /* ── RISK ── */
 .risk-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .risk-item:last-child{border-bottom:none}
-.risk-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.risk-icon{width:28px;height:28px;border-radius:var(--r2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .risk-body{flex:1;min-width:0}
 .risk-title{font-size:12px;font-weight:600;color:var(--text)}
 .risk-desc{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5}
@@ -160,37 +225,34 @@ select option{background:var(--bg3)}
 .tl-title{font-size:12px;font-weight:600;color:var(--text)}
 .tl-sub{font-size:11px;color:var(--text2);margin-top:2px}
 
-/* ── STAT MODEL UI ── */
-/* FIX #11: keyboard nav for model tabs */
+/* ── MODEL TABS (statistical) ── */
 .model-tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
-.model-tab{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
+.model-tab{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:var(--r);background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s var(--ease)}
 .model-tab.active{background:rgba(79,142,247,.12);color:var(--blue);border-color:rgba(79,142,247,.3)}
 .model-tab:hover:not(.active){color:var(--text2);border-color:var(--border2)}
 .model-tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.model-panel{display:none}.model-panel.active{display:block}
+.model-panel{display:none}
+.model-panel.active{display:block;animation:tabIn .25s var(--ease)}
 
-.formula-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.875rem;margin-bottom:1rem;font-family:var(--font-mono);font-size:11px;color:var(--text2);line-height:1.7}
-.formula-box .formula-title{color:var(--blue);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-.formula-highlight{color:var(--teal)}
-.formula-comment{color:var(--text3)}
-
-/* FIX #3: disclaimer style for ARIMA/SARIMA */
-.model-disclaimer{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);margin-bottom:1rem;font-size:11px;color:var(--amber);font-family:var(--font-mono);line-height:1.5}
+.method-note{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-left:2px solid var(--blue);border-radius:var(--r);margin-bottom:1rem;font-size:11px;color:var(--text2);line-height:1.6}
+.method-note .mn-icon{flex-shrink:0;font-size:13px}
 
 .stat-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
-.stat-result{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.75rem}
+.stat-result{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;transition:border-color .2s var(--ease)}
+.stat-result:hover{border-color:var(--border2)}
 .sr-label{font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.sr-val{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text)}
+.sr-val{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
 .sr-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--font-mono)}
 
 /* ── FILTER ── */
 .filter-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
-.filter-pill{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
+.filter-pill{padding:5px 12px;font-size:11px;border:1px solid var(--border);border-radius:var(--r);background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s var(--ease)}
 .filter-pill.active{background:rgba(79,142,247,.12);color:var(--blue);border-color:rgba(79,142,247,.3)}
 .filter-pill:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
 .health-period-row{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 10px}
-.health-period-btn{padding:4px 10px;font-size:10px;border:1px solid var(--border);border-radius:16px;background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s}
-.health-period-btn.active{background:rgba(34,211,164,.1);color:var(--teal);border-color:rgba(34,211,164,.28)}
+.health-period-btn{padding:4px 10px;font-size:10px;border:1px solid var(--border);border-radius:var(--r);background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s var(--ease)}
+.health-period-btn.active{background:rgba(34,224,176,.1);color:var(--teal);border-color:rgba(34,224,176,.28)}
 .health-period-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .health-proj-note{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .market-health-content{transition:opacity .2s ease,transform .2s ease}
@@ -203,25 +265,28 @@ select option{background:var(--bg3)}
 @keyframes marketHealthFade{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── SVG CHART ── */
-.line-chart-wrap{width:100%;overflow:hidden;border-radius:var(--r)}
-.conf-high{fill:rgba(79,142,247,.08)}
-.conf-line{stroke:var(--blue);stroke-width:2;fill:none}
-.forecast-line{stroke:var(--teal);stroke-width:2;fill:none;stroke-dasharray:5,3}
-.actual-dot{fill:var(--blue)}
+.fc-chart-wrap{width:100%;height:160px;margin-bottom:1rem}
+.fc-chart-wrap svg{width:100%;height:100%}
 .grid-line{stroke:var(--border);stroke-width:0.5}
 .axis-label{fill:var(--text3);font-size:9px;font-family:'DM Mono',monospace}
 
-/* FIX #10: Forecast chart container */
-.fc-chart-wrap{width:100%;height:160px;margin-bottom:1rem}
-.fc-chart-wrap svg{width:100%;height:100%}
-
 /* ── EOQ / SAFETY STOCK CARDS ── */
-.eoq-result{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(34,211,164,.06));border:1px solid rgba(79,142,247,.2);border-radius:var(--r2);padding:1.25rem;margin-bottom:1rem}
-.eoq-main{font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.eoq-result{
+  background:linear-gradient(135deg,rgba(79,142,247,.09),rgba(34,224,176,.07));
+  border:1px solid rgba(79,142,247,.22);border-radius:var(--r2);padding:1.25rem;margin-bottom:1rem;
+  position:relative;overflow:hidden;
+}
+.eoq-result::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-grad)}
+.eoq-main{
+  font-family:var(--font-display);font-size:30px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em;
+  background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  font-variant-numeric:tabular-nums;
+}
 .eoq-label{font-size:11px;color:var(--text2);font-family:var(--font-mono)}
 .eoq-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:1rem}
-.eoq-item{background:var(--bg3);border-radius:var(--r);padding:.75rem;border:1px solid var(--border)}
-.eoq-item-val{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text)}
+.eoq-item{background:var(--bg3);border-radius:var(--r);padding:.75rem;border:1px solid var(--border);transition:border-color .2s var(--ease)}
+.eoq-item:hover{border-color:var(--border2)}
+.eoq-item-val{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
 .eoq-item-lbl{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:2px}
 
 /* ── COMPARISON TABLE ── */
@@ -230,11 +295,51 @@ select option{background:var(--bg3)}
 .model-comparison td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
 .model-comparison tr:last-child td{border-bottom:none}
 .model-comparison .best{color:var(--teal);font-weight:600}
-.model-comparison tr.winner{background:rgba(34,211,164,.04)}
+.model-comparison tr.winner{background:rgba(34,224,176,.05);box-shadow:inset 2px 0 0 var(--teal)}
 
 /* ── EMPTY STATE ── */
 .empty-state{text-align:center;color:var(--text3);padding:2rem;font-size:12px;font-family:var(--font-mono)}
 .empty-state-icon{font-size:28px;margin-bottom:8px;opacity:.5}
+
+/* ── PLC / NPI ── */
+.plc-rail{display:flex;align-items:center;gap:0;margin-bottom:1.25rem;background:var(--bg3);border-radius:var(--r2);padding:6px;border:1px solid var(--border)}
+.plc-stage{flex:1;text-align:center;padding:10px 6px;border-radius:var(--r);cursor:pointer;transition:all .2s var(--ease);position:relative}
+.plc-stage:not(:last-child)::after{content:'';position:absolute;right:-1px;top:50%;width:1px;height:18px;background:var(--border2);transform:translateY(-50%)}
+.plc-stage-name{font-size:11px;font-weight:600;font-family:var(--font-mono)}
+.plc-stage-count{font-family:var(--font-display);font-size:18px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.plc-stage.active{background:var(--bg4)}
+.plc-stage.active::before{content:'';position:absolute;left:8px;right:8px;bottom:3px;height:2px;background:var(--accent-grad);border-radius:2px}
+.plc-sku-list{display:flex;flex-direction:column;gap:6px}
+.plc-sku-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .2s var(--ease)}
+.plc-sku-row:hover{border-color:var(--border2);transform:translateX(2px)}
+.plc-sku-row.selected{border-color:var(--blue);background:rgba(79,142,247,.06)}
+.plc-sku-main{display:flex;align-items:center;gap:10px;min-width:0}
+.plc-sku-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.npi-curve-toggle{display:flex;gap:4px;margin-bottom:1rem}
+
+/* ── HIERARCHY ── */
+.hier-tree{display:flex;flex-direction:column;gap:2px}
+.hier-node{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .15s var(--ease)}
+.hier-node:hover{background:rgba(255,255,255,.03)}
+.hier-node.expanded{background:rgba(255,255,255,.02)}
+.hier-toggle{width:16px;height:16px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;flex-shrink:0;transition:transform .2s var(--ease)}
+.hier-toggle.open{transform:rotate(90deg)}
+.hier-label{font-size:12px;color:var(--text);flex:1}
+.hier-meta{font-size:11px;color:var(--text3);font-family:var(--font-mono);display:flex;gap:14px}
+.hier-children{display:none;margin-left:24px;border-left:1px solid var(--border);padding-left:4px}
+.hier-children.open{display:flex;flex-direction:column;gap:2px;animation:hierOpen .2s var(--ease)}
+@keyframes hierOpen{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.hier-level-company{font-weight:700;font-family:var(--font-display);font-size:13px}
+.hier-level-region .hier-label{font-weight:600}
+.hier-toggle-group{display:flex;gap:4px;margin-bottom:1rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:3px;width:fit-content}
+.hier-toggle-btn{padding:6px 14px;font-size:11px;border:none;border-radius:var(--r);background:none;cursor:pointer;color:var(--text3);font-family:var(--font-mono);transition:all .2s var(--ease)}
+.hier-toggle-btn.active{background:var(--bg4);color:var(--text)}
+
+/* ── DATA QUALITY ── */
+.dq-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.dq-row:last-child{border-bottom:none}
+.dq-flag{font-size:12px;color:var(--text)}
+.dq-flag-sub{font-size:11px;color:var(--text3);margin-top:2px}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -244,9 +349,11 @@ select option{background:var(--bg3)}
 /* ── FOOTER ── */
 .footer{text-align:center;font-size:10px;color:var(--text3);padding:2rem 0 .5rem;font-family:var(--font-mono);letter-spacing:.04em}
 
-/* ── HW warning ── */
-.hw-warn{display:none;padding:8px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);margin-bottom:1rem;font-size:11px;color:var(--amber);font-family:var(--font-mono)}
+.hw-warn{display:none;padding:8px 12px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:var(--r);margin-bottom:1rem;font-size:11px;color:var(--amber);font-family:var(--font-mono)}
 
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:1fr 1fr 1fr}
+}
 @media(max-width:700px){
   .kpi-grid{grid-template-columns:1fr 1fr}
   .two-col,.three-col,.four-col{grid-template-columns:1fr}
@@ -265,7 +372,7 @@ select option{background:var(--bg3)}
     <div class="logo-icon">📊</div>
     <div>
       <div class="logo-name">S&D Planning Engine</div>
-      <div class="logo-tag">STATISTICAL · MATHEMATICAL · OPERATIONAL</div>
+      <div class="logo-tag">DEMAND · INVENTORY · LIFECYCLE</div>
     </div>
   </div>
   <div class="header-right">
@@ -280,30 +387,27 @@ select option{background:var(--bg3)}
   </div>
 </div>
 
-<!-- NAV: FIX #11 - tabindex and keyboard navigation -->
+<!-- NAV -->
 <div class="nav-wrap" role="tablist" aria-label="Main navigation">
   <button class="nav-btn active" role="tab" aria-selected="true" tabindex="0" onclick="switchTab('dashboard')" onkeydown="navKeydown(event,0)">Dashboard</button>
-  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('statistical')" onkeydown="navKeydown(event,1)">📈 Statistical Models</button>
-  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('eoq')" onkeydown="navKeydown(event,2)">⚙️ EOQ & Safety Stock</button>
-  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('forecast')" onkeydown="navKeydown(event,3)">Demand Forecast</button>
-  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('inventory')" onkeydown="navKeydown(event,4)">Inventory</button>
-  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('suppliers')" onkeydown="navKeydown(event,5)">Suppliers</button>
-  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('risks')" onkeydown="navKeydown(event,6)">Risk Monitor</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('statistical')" onkeydown="navKeydown(event,1)">Statistical Forecast</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('npi')" onkeydown="navKeydown(event,2)">NPI &amp; Lifecycle</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('hierarchy')" onkeydown="navKeydown(event,3)">Hierarchy</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('eoq')" onkeydown="navKeydown(event,4)">EOQ &amp; Safety Stock</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('inventory')" onkeydown="navKeydown(event,5)">Inventory</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('suppliers')" onkeydown="navKeydown(event,6)">Suppliers</button>
+  <button class="nav-btn" role="tab" aria-selected="false" tabindex="-1" onclick="switchTab('risks')" onkeydown="navKeydown(event,7)">Risk Monitor</button>
 </div>
 
 <!-- ═══════════ DASHBOARD ═══════════ -->
 <div id="tab-dashboard" class="tab active" role="tabpanel">
   <div class="kpi-grid">
     <div class="kpi"><div class="kpi-glow" style="background:var(--blue)"></div><div class="kpi-lbl">Forecast Accuracy</div><div class="kpi-val" id="d-accuracy">—</div><div class="kpi-sub" id="d-accuracy-sub">—</div></div>
-    <div class="kpi"><div class="kpi-glow" style="background:var(--teal)"></div><div class="kpi-lbl">Avg Stock Coverage</div><div class="kpi-val" id="d-coverage">—</div><div class="kpi-sub kpi-neutral">Target 30–45 days</div></div>
-    <div class="kpi"><div class="kpi-glow" style="background:var(--red)"></div><div class="kpi-lbl">At-Risk SKUs</div><div class="kpi-val" id="d-atrisk">—</div><div class="kpi-sub kpi-down">Critical + Low</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--teal)"></div><div class="kpi-lbl">Avg Stock Coverage</div><div class="kpi-val" id="d-coverage">—</div><div class="kpi-sub kpi-neutral" id="d-coverage-sub">Target 30–45 days</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--red)"></div><div class="kpi-lbl">At-Risk SKUs</div><div class="kpi-val" id="d-atrisk">—</div><div class="kpi-sub kpi-down" id="d-atrisk-sub">Critical + Low</div></div>
     <div class="kpi"><div class="kpi-glow" style="background:var(--amber)"></div><div class="kpi-lbl">On-Time Delivery</div><div class="kpi-val" id="d-otd">—</div><div class="kpi-sub" id="d-otd-sub">—</div></div>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-lbl">Total Stock (units)</div><div class="kpi-val" id="d-total-stock">—</div><div class="kpi-sub kpi-neutral">All markets</div></div>
-    <div class="kpi"><div class="kpi-lbl">Open POs</div><div class="kpi-val" id="d-open-pos">—</div><div class="kpi-sub kpi-neutral" id="d-po-sub">Units on order</div></div>
-    <div class="kpi"><div class="kpi-lbl">Excess SKUs</div><div class="kpi-val" id="d-excess">—</div><div class="kpi-sub kpi-neutral">&gt;60 days coverage</div></div>
-    <div class="kpi"><div class="kpi-lbl">Best Fit Model</div><div class="kpi-val" style="font-size:16px" id="d-best-model">—</div><div class="kpi-sub kpi-neutral">Lowest MAPE</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--purple)"></div><div class="kpi-lbl">Open PO Value</div><div class="kpi-val" id="d-po-value">—</div><div class="kpi-sub kpi-neutral" id="d-po-sub">—</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--pink)"></div><div class="kpi-lbl">Active NPI SKUs</div><div class="kpi-val" id="d-npi-count">—</div><div class="kpi-sub kpi-neutral">Phase-In stage</div></div>
   </div>
   <div class="two-col">
     <div class="card">
@@ -334,8 +438,8 @@ select option{background:var(--bg3)}
       <div id="dash-sku-breakdown"></div>
     </div>
     <div class="card">
-      <div class="card-title">Supplier OTD <span class="ct-badge b-teal">Performance</span></div>
-      <div id="dash-supplier-perf"></div>
+      <div class="card-title">PLC Mix <span class="ct-badge b-pink">Lifecycle</span></div>
+      <div id="dash-plc-mix"></div>
     </div>
     <div class="card">
       <div class="card-title">Top Alerts <span class="ct-badge b-red" id="alert-count">0</span></div>
@@ -344,55 +448,46 @@ select option{background:var(--bg3)}
   </div>
   <div class="card">
     <div class="card-title">Inventory Snapshot</div>
-    <div class="tbl-wrap"><table><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>Stock</th><th>Days Cover</th><th>CV Risk</th><th>Stockout Prob</th><th>Status</th></tr></thead><tbody id="dash-inv-table"></tbody></table></div>
+    <div class="tbl-wrap"><table><thead><tr><th>SKU</th><th>Product</th><th>Market</th><th>PLC Stage</th><th>Stock</th><th>Days Cover</th><th>Stockout Prob</th><th>Status</th></tr></thead><tbody id="dash-inv-table"></tbody></table></div>
   </div>
 </div>
 
-<!-- ═══════════ STATISTICAL MODELS ═══════════ -->
+<!-- ═══════════ STATISTICAL FORECAST ═══════════ -->
 <div id="tab-statistical" class="tab" role="tabpanel">
   <div class="section-hdr">
-    <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Statistical Forecasting Engine</span>
+    <div>
+      <div class="section-title">Statistical Forecasting</div>
+      <div class="section-sub">For SKUs with steady demand history — Mature and Growth stage items</div>
+    </div>
     <div style="display:flex;gap:8px">
-      <!-- FIX #6: SKU select rebuilt fresh on every loadDemo -->
-      <select id="stat-sku" style="font-size:11px;padding:6px 10px;width:200px" onchange="onSKUChange()">
+      <select id="stat-sku" style="font-size:11px;padding:6px 10px;width:220px" onchange="onSKUChange()">
         <option value="">— load data first —</option>
       </select>
       <button class="btn-primary" onclick="runAllModels()">Run All Models</button>
     </div>
   </div>
 
-  <!-- MODEL SELECTOR: FIX #11 keyboard nav -->
   <div class="model-tabs" role="tablist" aria-label="Statistical models">
     <button class="model-tab active" role="tab" tabindex="0" onclick="switchModel('ma')" onkeydown="modelKeydown(event,0)">Moving Average</button>
-    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('es')" onkeydown="modelKeydown(event,1)">Exp. Smoothing</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('es')" onkeydown="modelKeydown(event,1)">Exponential Smoothing</button>
     <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('hw')" onkeydown="modelKeydown(event,2)">Holt-Winters</button>
-    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('arima')" onkeydown="modelKeydown(event,3)">ARIMA</button>
-    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('sarima')" onkeydown="modelKeydown(event,4)">SARIMA</button>
-    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('compare')" onkeydown="modelKeydown(event,5)">Model Comparison</button>
+    <button class="model-tab" role="tab" tabindex="-1" onclick="switchModel('compare')" onkeydown="modelKeydown(event,3)">Model Comparison</button>
   </div>
 
   <!-- MOVING AVERAGE -->
   <div id="model-ma" class="model-panel active" role="tabpanel">
     <div class="two-col">
       <div class="card">
-        <div class="card-title">Simple Moving Average (SMA)</div>
-        <div class="formula-box">
-          <div class="formula-title">Formula</div>
-          SMA<sub>t</sub> = <span class="formula-highlight">(D<sub>t-1</sub> + D<sub>t-2</sub> + ... + D<sub>t-n</sub>) / n</span><br><br>
-          <span class="formula-comment">// Where n = window size (periods)</span><br>
-          <span class="formula-comment">// Equal weight to all observations in window</span><br><br>
-          WMA<sub>t</sub> = <span class="formula-highlight">Σ(w<sub>i</sub> × D<sub>t-i</sub>) / Σw<sub>i</sub></span><br>
-          <span class="formula-comment">// Weighted: recent periods get higher weight</span>
-        </div>
+        <div class="card-title">Moving Average</div>
+        <div class="method-note"><span class="mn-icon">ℹ</span><span>Best for SKUs with stable demand and no strong trend or seasonality. Averages the last few periods — simple, low-risk baseline most planners check first.</span></div>
         <div class="input-grid" style="grid-template-columns:1fr 1fr">
-          <div class="field"><label>Window (periods)</label><input type="number" id="ma-window" value="4" min="2" max="12" onchange="runMA()"></div>
+          <div class="field"><label>Window (months)</label><input type="number" id="ma-window" value="4" min="2" max="12" onchange="runMA()"></div>
           <div class="field"><label>Type</label><select id="ma-type" onchange="runMA()"><option value="simple">Simple (SMA)</option><option value="weighted">Weighted (WMA)</option></select></div>
         </div>
         <div class="stat-result-grid" id="ma-results"></div>
       </div>
       <div class="card">
-        <div class="card-title">SMA Forecast Chart <span class="ct-badge b-blue">13 weeks</span></div>
-        <!-- FIX #12: xMidYMid meet for non-distorting responsive charts -->
+        <div class="card-title">Forecast Chart <span class="ct-badge b-blue">13 weeks</span></div>
         <svg id="ma-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="ma-forecast-table" style="margin-top:1rem"></div>
       </div>
@@ -403,24 +498,16 @@ select option{background:var(--bg3)}
   <div id="model-es" class="model-panel" role="tabpanel">
     <div class="two-col">
       <div class="card">
-        <div class="card-title">Single Exponential Smoothing (SES)</div>
-        <div class="formula-box">
-          <div class="formula-title">Formula</div>
-          S<sub>t</sub> = <span class="formula-highlight">α × D<sub>t</sub> + (1-α) × S<sub>t-1</sub></span><br><br>
-          <span class="formula-comment">// α (alpha) = smoothing factor [0,1]</span><br>
-          <span class="formula-comment">// High α → more weight to recent demand</span><br>
-          <span class="formula-comment">// Low α  → smoother, slower to react</span><br><br>
-          Forecast: <span class="formula-highlight">F<sub>t+1</sub> = S<sub>t</sub></span><br>
-          MAPE = <span class="formula-highlight">mean(|D<sub>t</sub> - F<sub>t</sub>| / D<sub>t</sub>) × 100</span>
-        </div>
+        <div class="card-title">Exponential Smoothing</div>
+        <div class="method-note"><span class="mn-icon">ℹ</span><span>Weights recent demand more heavily than older demand. Reacts faster to a real shift than a moving average — use when demand is gradually trending without seasonality.</span></div>
         <div class="input-grid" style="grid-template-columns:1fr 1fr">
-          <div class="field"><label>Alpha (α)</label><input type="number" id="es-alpha" value="0.3" min="0.01" max="0.99" step="0.01" onchange="runES()"></div>
-          <div class="field"><label>Optimize α</label><select id="es-optimize" onchange="runES()"><option value="no">Manual</option><option value="yes">Auto-optimize</option></select></div>
+          <div class="field"><label>Alpha (responsiveness)</label><input type="number" id="es-alpha" value="0.3" min="0.01" max="0.99" step="0.01" onchange="runES()"></div>
+          <div class="field"><label>Optimize alpha</label><select id="es-optimize" onchange="runES()"><option value="no">Manual</option><option value="yes">Auto-optimize</option></select></div>
         </div>
         <div class="stat-result-grid" id="es-results"></div>
       </div>
       <div class="card">
-        <div class="card-title">SES Forecast Chart <span class="ct-badge b-blue">13 weeks</span></div>
+        <div class="card-title">Forecast Chart <span class="ct-badge b-blue">13 weeks</span></div>
         <svg id="es-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="es-forecast-table" style="margin-top:1rem"></div>
       </div>
@@ -431,17 +518,9 @@ select option{background:var(--bg3)}
   <div id="model-hw" class="model-panel" role="tabpanel">
     <div class="two-col">
       <div class="card">
-        <div class="card-title">Holt-Winters Triple Exponential Smoothing</div>
-        <!-- FIX #2: HW warning shown when data is too short -->
-        <div id="hw-warn" class="hw-warn">⚠ Insufficient data for seasonal period. Need at least 2×m data points. Using fallback m=2.</div>
-        <div class="formula-box">
-          <div class="formula-title">Formula — Additive seasonal</div>
-          Level:   L<sub>t</sub> = <span class="formula-highlight">α(D<sub>t</sub>/S<sub>t-m</sub>) + (1-α)(L<sub>t-1</sub>+T<sub>t-1</sub>)</span><br>
-          Trend:   T<sub>t</sub> = <span class="formula-highlight">β(L<sub>t</sub>-L<sub>t-1</sub>) + (1-β)T<sub>t-1</sub></span><br>
-          Season:  S<sub>t</sub> = <span class="formula-highlight">γ(D<sub>t</sub>/L<sub>t</sub>) + (1-γ)S<sub>t-m</sub></span><br><br>
-          Forecast: <span class="formula-highlight">F<sub>t+h</sub> = (L<sub>t</sub> + hT<sub>t</sub>) × S<sub>t-m+h</sub></span><br>
-          <span class="formula-comment">// m = seasonal period (e.g. 4 quarters, 12 months)</span>
-        </div>
+        <div class="card-title">Holt-Winters</div>
+        <div id="hw-warn" class="hw-warn">⚠ Limited history for a full seasonal cycle — using a shortened seasonal period until more data builds up.</div>
+        <div class="method-note"><span class="mn-icon">ℹ</span><span>Tracks level, trend, and seasonality together. The right choice for SKUs with a repeating yearly pattern (holiday peaks, summer dips) layered on top of growth or decline.</span></div>
         <div class="input-grid" style="grid-template-columns:1fr 1fr 1fr">
           <div class="field"><label>Alpha (level)</label><input type="number" id="hw-alpha" value="0.3" step="0.01" min="0.01" max="0.99" onchange="runHW()"></div>
           <div class="field"><label>Beta (trend)</label><input type="number" id="hw-beta" value="0.1" step="0.01" min="0.01" max="0.99" onchange="runHW()"></div>
@@ -450,88 +529,9 @@ select option{background:var(--bg3)}
         <div class="stat-result-grid" id="hw-results"></div>
       </div>
       <div class="card">
-        <div class="card-title">Holt-Winters Forecast <span class="ct-badge b-purple">Trend + Seasonal</span></div>
+        <div class="card-title">Forecast Chart <span class="ct-badge b-purple">Trend + Seasonal</span></div>
         <svg id="hw-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
         <div id="hw-forecast-table" style="margin-top:1rem"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ARIMA: FIX #3 disclaimer added -->
-  <div id="model-arima" class="model-panel" role="tabpanel">
-    <div class="model-disclaimer">
-      ⚠ Note: ARIMA is implemented as a JS approximation using gradient-descent AR fitting. Results are directionally correct but may differ from professional statistical software (R/Python statsmodels). Use for planning guidance, not publication-grade analysis.
-    </div>
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title">ARIMA <span class="ct-badge b-purple">AutoRegressive Integrated Moving Average</span></div>
-        <div class="formula-box">
-          <div class="formula-title">ARIMA(p,d,q) — Core equation</div>
-          <span class="formula-highlight">φ(B)(1-B)<sup>d</sup>X<sub>t</sub> = θ(B)ε<sub>t</sub></span><br><br>
-          AR(p): <span class="formula-highlight">X<sub>t</sub> = c + φ<sub>1</sub>X<sub>t-1</sub> + ... + φ<sub>p</sub>X<sub>t-p</sub> + ε<sub>t</sub></span><br>
-          <span class="formula-comment">// p = autoregressive order (past values)</span><br><br>
-          I(d):  <span class="formula-highlight">ΔX<sub>t</sub> = X<sub>t</sub> - X<sub>t-d</sub></span><br>
-          <span class="formula-comment">// d = differencing order (makes series stationary)</span><br><br>
-          MA(q): <span class="formula-highlight">X<sub>t</sub> = μ + ε<sub>t</sub> + θ<sub>1</sub>ε<sub>t-1</sub> + ... + θ<sub>q</sub>ε<sub>t-q</sub></span><br>
-          <span class="formula-comment">// q = moving average order (past errors)</span>
-        </div>
-        <div class="input-grid" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="field"><label>p (AR order)</label><input type="number" id="arima-p" value="1" min="0" max="5" onchange="runARIMA()"></div>
-          <div class="field"><label>d (differencing)</label><input type="number" id="arima-d" value="1" min="0" max="2" onchange="runARIMA()"></div>
-          <div class="field"><label>q (MA order)</label><input type="number" id="arima-q" value="1" min="0" max="5" onchange="runARIMA()"></div>
-        </div>
-        <div class="stat-result-grid" id="arima-results"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">ARIMA Forecast <span class="ct-badge b-purple">with Confidence Bands</span></div>
-        <svg id="arima-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
-        <div id="arima-forecast-table" style="margin-top:1rem"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SARIMA: FIX #3 disclaimer added -->
-  <div id="model-sarima" class="model-panel" role="tabpanel">
-    <div class="model-disclaimer">
-      ⚠ Note: SARIMA is implemented as a JS approximation. The seasonal component is modelled via combined AR lags rather than the full Box-Jenkins backshift operator. Results are indicative — for production forecasting use Python statsmodels or R's forecast package.
-    </div>
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title">SARIMA <span class="ct-badge b-pink" style="background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)">Seasonal ARIMA</span></div>
-        <div class="formula-box">
-          <div class="formula-title">SARIMA(p,d,q)(P,D,Q)[m]</div>
-          <span class="formula-highlight">φ(B)Φ(B<sup>m</sup>)(1-B)<sup>d</sup>(1-B<sup>m</sup>)<sup>D</sup>X<sub>t</sub> = θ(B)Θ(B<sup>m</sup>)ε<sub>t</sub></span><br><br>
-          <span class="formula-comment">// Non-seasonal: (p,d,q) same as ARIMA</span><br>
-          <span class="formula-comment">// Seasonal AR: Φ(B<sup>m</sup>) captures yearly patterns</span><br>
-          <span class="formula-comment">// Seasonal MA: Θ(B<sup>m</sup>) captures seasonal errors</span><br>
-          <span class="formula-comment">// D = seasonal differencing order</span><br>
-          <span class="formula-comment">// m = seasonal period (4=quarterly, 12=monthly)</span><br><br>
-          AIC = <span class="formula-highlight">2k - 2ln(L̂)</span><br>
-          <span class="formula-comment">// Model selection: lower AIC = better fit</span>
-        </div>
-        <div class="input-grid" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="field"><label>p,d,q</label>
-            <div style="display:flex;gap:4px">
-              <input type="number" id="sarima-p" value="1" min="0" max="3" style="width:60px" onchange="runSARIMA()">
-              <input type="number" id="sarima-d" value="1" min="0" max="2" style="width:60px" onchange="runSARIMA()">
-              <input type="number" id="sarima-q" value="1" min="0" max="3" style="width:60px" onchange="runSARIMA()">
-            </div>
-          </div>
-          <div class="field"><label>P,D,Q</label>
-            <div style="display:flex;gap:4px">
-              <input type="number" id="sarima-P" value="1" min="0" max="2" style="width:60px" onchange="runSARIMA()">
-              <input type="number" id="sarima-D" value="1" min="0" max="1" style="width:60px" onchange="runSARIMA()">
-              <input type="number" id="sarima-Q" value="1" min="0" max="2" style="width:60px" onchange="runSARIMA()">
-            </div>
-          </div>
-          <div class="field"><label>Seasonal period (m)</label><select id="sarima-m" onchange="runSARIMA()"><option value="4">4 (Quarterly)</option><option value="12" selected>12 (Monthly)</option><option value="52">52 (Weekly)</option></select></div>
-        </div>
-        <div class="stat-result-grid" id="sarima-results"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">SARIMA Forecast <span class="ct-badge" style="background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)">Seasonal Pattern</span></div>
-        <svg id="sarima-chart" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
-        <div id="sarima-forecast-table" style="margin-top:1rem"></div>
       </div>
     </div>
   </div>
@@ -540,9 +540,10 @@ select option{background:var(--bg3)}
   <div id="model-compare" class="model-panel" role="tabpanel">
     <div class="card">
       <div class="card-title">Model Comparison <span class="ct-badge b-teal">Auto-selects best fit</span></div>
+      <div class="card-caption">The tool runs all three models against this SKU's history and ranks them by MAPE (lower is better). In production planning systems, this is normally the only screen a planner sees — the underlying math stays in the background.</div>
       <div class="tbl-wrap">
         <table class="model-comparison" id="comparison-table">
-          <thead><tr><th>Model</th><th>MAPE (%)</th><th>MAE</th><th>RMSE</th><th>AIC</th><th>13-Wk Forecast</th><th>Best For</th><th>Verdict</th></tr></thead>
+          <thead><tr><th>Model</th><th>MAPE (%)</th><th>MAE</th><th>RMSE</th><th>Next Month</th><th>Best For</th><th>Verdict</th></tr></thead>
           <tbody id="comparison-body"></tbody>
         </table>
       </div>
@@ -552,34 +553,69 @@ select option{background:var(--bg3)}
       <svg id="compare-chart" viewBox="0 0 600 160" preserveAspectRatio="xMidYMid meet" style="width:100%;height:160px"></svg>
       <div class="chart-legend" style="margin-top:10px">
         <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Actual</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--teal)"></div>SMA</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>SES</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>ARIMA</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--pink)"></div>SARIMA</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--teal)"></div>Moving Average</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>Exp. Smoothing</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--purple)"></div>Holt-Winters</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════ NPI & LIFECYCLE ═══════════ -->
+<div id="tab-npi" class="tab" role="tabpanel">
+  <div class="section-hdr">
+    <div>
+      <div class="section-title">NPI &amp; Product Lifecycle</div>
+      <div class="section-sub">New product launches and phase-out items need a different forecasting approach than mature SKUs</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lifecycle Stage Mix</div>
+    <div class="plc-rail" id="plc-rail"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">SKUs by Stage</div>
+      <div class="plc-sku-list" id="plc-sku-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="npi-detail-title">Select a SKU</div>
+      <div id="npi-detail-body">
+        <div class="empty-state"><div class="empty-state-icon">🚀</div>Select a SKU on the left to see its lifecycle forecast</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ HIERARCHY ═══════════ -->
+<div id="tab-hierarchy" class="tab" role="tabpanel">
+  <div class="section-hdr">
+    <div>
+      <div class="section-title">Hierarchy View</div>
+      <div class="section-sub">Company → Region → Market → SKU — drill down for detail, or roll up for the executive view</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="hier-toggle-group">
+      <button class="hier-toggle-btn active" id="hier-mode-top" onclick="setHierarchyMode('top')">Top-Down</button>
+      <button class="hier-toggle-btn" id="hier-mode-bottom" onclick="setHierarchyMode('bottom')">Bottom-Up</button>
+    </div>
+    <div class="card-caption" id="hier-mode-caption">Top-down: start from total company demand and see how it splits across regions, markets, and SKUs.</div>
+    <div class="hier-tree" id="hier-tree"></div>
   </div>
 </div>
 
 <!-- ═══════════ EOQ & SAFETY STOCK ═══════════ -->
 <div id="tab-eoq" class="tab" role="tabpanel">
   <div class="section-hdr">
-    <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Inventory Optimization Engine</span>
+    <div class="section-title">Inventory Optimization</div>
   </div>
   <div class="two-col">
-    <!-- EOQ -->
     <div class="card">
       <div class="card-title">Economic Order Quantity (EOQ)</div>
-      <div class="formula-box">
-        <div class="formula-title">Wilson's EOQ Formula</div>
-        EOQ = <span class="formula-highlight">√(2DS / H)</span><br><br>
-        <span class="formula-comment">// D = Annual demand (units/year)</span><br>
-        <span class="formula-comment">// S = Ordering cost per order ($)</span><br>
-        <span class="formula-comment">// H = Holding cost per unit per year ($)</span><br><br>
-        Total Cost = <span class="formula-highlight">DS/Q + QH/2 + DC</span><br>
-        <span class="formula-comment">// Q = order quantity, C = unit cost</span>
-      </div>
-      <!-- FIX #7: min="1" guards on all EOQ inputs to prevent div-by-zero -->
+      <div class="method-note"><span class="mn-icon">ℹ</span><span>Finds the order size that minimizes total cost — the trade-off between ordering too often (high order cost) and holding too much stock (high holding cost).</span></div>
       <div class="input-grid">
         <div class="field"><label>Annual Demand (D)</label><input type="number" id="eoq-d" value="15000" min="1" onchange="calcEOQ()"></div>
         <div class="field"><label>Order Cost (S) $</label><input type="number" id="eoq-s" value="250" min="0.01" step="0.01" onchange="calcEOQ()"></div>
@@ -590,24 +626,12 @@ select option{background:var(--bg3)}
       </div>
       <div class="eoq-result" id="eoq-main-result"></div>
     </div>
-    <!-- SAFETY STOCK -->
     <div class="card">
-      <div class="card-title">Safety Stock & Reorder Point</div>
-      <div class="formula-box">
-        <div class="formula-title">Statistical Safety Stock Formula</div>
-        SS = <span class="formula-highlight">Z × σ<sub>LT</sub></span><br><br>
-        σ<sub>LT</sub> = <span class="formula-highlight">√(LT × σ<sub>d</sub>² + d̄² × σ<sub>LT</sub>²)</span><br>
-        <span class="formula-comment">// Z = service level z-score</span><br>
-        <span class="formula-comment">// σ_d = std dev of demand</span><br>
-        <span class="formula-comment">// d̄ = mean daily demand</span><br>
-        <span class="formula-comment">// σ_LT = std dev of lead time</span><br><br>
-        ROP = <span class="formula-highlight">d̄ × LT + SS</span><br>
-        <span class="formula-comment">// Reorder when stock hits ROP</span>
-      </div>
-      <!-- FIX #7: min guards on SS inputs -->
+      <div class="card-title">Safety Stock &amp; Reorder Point</div>
+      <div class="method-note"><span class="mn-icon">ℹ</span><span>The buffer stock needed to protect against demand and lead-time variability at your target service level. Reorder Point is when to trigger the next order.</span></div>
       <div class="input-grid">
-        <div class="field"><label>Avg Daily Demand (d̄)</label><input type="number" id="ss-d" value="45" min="1" onchange="calcSS()"></div>
-        <div class="field"><label>Demand Std Dev (σd)</label><input type="number" id="ss-sd" value="12" min="0" onchange="calcSS()"></div>
+        <div class="field"><label>Avg Daily Demand</label><input type="number" id="ss-d" value="45" min="1" onchange="calcSS()"></div>
+        <div class="field"><label>Demand Std Dev</label><input type="number" id="ss-sd" value="12" min="0" onchange="calcSS()"></div>
         <div class="field"><label>Avg Lead Time (days)</label><input type="number" id="ss-lt" value="18" min="1" onchange="calcSS()"></div>
         <div class="field"><label>Lead Time Std Dev</label><input type="number" id="ss-slt" value="3" min="0" onchange="calcSS()"></div>
         <div class="field"><label>Service Level %</label><select id="ss-sl" onchange="calcSS()"><option value="0.84">80%</option><option value="1.28">90%</option><option value="1.65" selected>95%</option><option value="1.96">97.5%</option><option value="2.33">99%</option></select></div>
@@ -617,11 +641,9 @@ select option{background:var(--bg3)}
     </div>
   </div>
 
-  <!-- BATCH EOQ FOR ALL SKUs -->
   <div class="card">
     <div class="section-hdr" style="margin-bottom:.75rem">
       <div class="card-title" style="margin-bottom:0">Batch Optimization — All SKUs <span class="ct-badge b-teal">Auto-calculated</span></div>
-      <!-- FIX #9: Export button for batch EOQ table -->
       <button class="btn-export" onclick="exportTable('batch-eoq-table','eoq_batch')">
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
         Export CSV
@@ -634,81 +656,14 @@ select option{background:var(--bg3)}
   </div>
 </div>
 
-<!-- ═══════════ FORECAST ═══════════ -->
-<div id="tab-forecast" class="tab" role="tabpanel">
-  <div class="section-hdr">
-    <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Demand Forecast Builder</span>
-    <div style="display:flex;gap:8px">
-      <!-- FIX #9: Export for forecast -->
-      <button class="btn-export" onclick="exportTable('fc-tbl','forecast')">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
-        Export CSV
-      </button>
-      <button class="btn-primary" onclick="runForecast()">Run Forecast</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Assumptions</div>
-    <div class="input-grid">
-      <div class="field"><label>Market</label><select id="fc-market"><option>EMEA</option><option>North America</option><option>APAC</option><option>LATAM</option><option>MEA</option></select></div>
-      <div class="field"><label>Category</label><select id="fc-cat"><option>Consumer Electronics</option><option>Accessories</option><option>Peripherals</option><option>Software</option></select></div>
-      <div class="field"><label>Horizon</label><select id="fc-horizon"><option>13 weeks</option><option>6 months</option><option>12 months</option></select></div>
-      <div class="field"><label>Base demand (units/wk)</label><input type="number" id="fc-base" value="1400" min="1"></div>
-      <div class="field"><label>Growth %</label><input type="number" id="fc-growth" value="8"></div>
-      <div class="field"><label>Seasonal index</label><input type="number" id="fc-seasonal" value="1.12" step="0.01"></div>
-      <div class="field"><label>Promo uplift %</label><input type="number" id="fc-promo" value="0"></div>
-      <div class="field"><label>Local team bias %</label><input type="number" id="fc-bias" value="5"></div>
-      <div class="field"><label>Confidence</label><select id="fc-conf"><option>90%</option><option>80%</option><option>70%</option></select></div>
-    </div>
-  </div>
-
-  <!-- FIX #10: Forecast SVG line chart -->
-  <div class="card">
-    <div class="card-title" id="fc-chart-title">13-Week Forecast Chart</div>
-    <div class="fc-chart-wrap">
-      <svg id="fc-chart" viewBox="0 0 600 140" preserveAspectRatio="xMidYMid meet"></svg>
-    </div>
-    <div class="chart-legend">
-      <div class="leg-item"><div class="leg-dot" style="background:var(--teal)"></div>Adjusted Forecast</div>
-      <div class="leg-item"><div class="leg-dot" style="background:rgba(79,142,247,0.3)"></div>Confidence Band</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title" id="fc-title">13-Week Forecast</div>
-    <div class="tbl-wrap">
-      <table id="fc-tbl">
-        <thead><tr><th>Week</th><th>Base</th><th>Adjusted</th><th>Low</th><th>High</th><th>Confidence</th><th>vs Prior</th></tr></thead>
-        <tbody id="fc-body"></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="card">
-    <div class="section-hdr" style="margin-bottom:.75rem">
-      <div class="card-title" style="margin-bottom:0">Imported Forecast — by Market</div>
-      <button class="btn-export" onclick="exportTable('fc-excel-tbl','imported_forecast')">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
-        Export CSV
-      </button>
-    </div>
-    <div class="tbl-wrap">
-      <table id="fc-excel-tbl">
-        <thead><tr><th>Market</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Total</th></tr></thead>
-        <tbody id="fc-excel-body"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════ INVENTORY ═══════════ -->
 <div id="tab-inventory" class="tab" role="tabpanel">
   <div class="section-hdr">
-    <span style="font-family:var(--font-display);font-size:16px;font-weight:700">Inventory Tracker</span>
+    <div class="section-title">Inventory Tracker</div>
     <div style="display:flex;gap:8px;align-items:center">
       <select id="inv-market-filter" style="font-size:11px;padding:6px 10px" onchange="renderInventory()">
         <option value="all">All markets</option><option value="emea">EMEA</option><option value="north america">North America</option><option value="apac">APAC</option><option value="latam">LATAM</option>
       </select>
-      <!-- FIX #9: export for inventory -->
       <button class="btn-export" onclick="exportTable('inv-tbl','inventory')">
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 10l3 3 3-3"/></svg>
         Export CSV
@@ -752,48 +707,70 @@ select option{background:var(--bg3)}
 
 <!-- ═══════════ RISKS ═══════════ -->
 <div id="tab-risks" class="tab" role="tabpanel">
-  <div class="section-hdr"><span style="font-family:var(--font-display);font-size:16px;font-weight:700">Risk Monitor</span></div>
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-lbl">Critical</div><div class="kpi-val kpi-down">2</div></div>
-    <div class="kpi"><div class="kpi-lbl">Moderate</div><div class="kpi-val" style="color:var(--amber)">4</div></div>
-    <div class="kpi"><div class="kpi-lbl">Monitoring</div><div class="kpi-val" style="color:var(--blue)">3</div></div>
-    <div class="kpi"><div class="kpi-lbl">Resolved (30d)</div><div class="kpi-val kpi-up">11</div></div>
+
+  <div class="section-hdr"><div class="section-title">Risk Monitor</div></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi"><div class="kpi-lbl">Critical</div><div class="kpi-val kpi-down" id="risk-critical-count">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Moderate</div><div class="kpi-val" style="color:var(--amber)" id="risk-moderate-count">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Monitoring</div><div class="kpi-val" style="color:var(--blue)" id="risk-monitor-count">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Data Quality Flags</div><div class="kpi-val" style="color:var(--purple)" id="risk-dq-count">—</div></div>
   </div>
-  <div class="card" id="risk-list"></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Active Risks</div>
+      <div id="risk-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Data Quality Flags <span class="ct-badge b-purple">Outlier check</span></div>
+      <div class="card-caption">Demand History rows flagged automatically where a single month deviates sharply from the SKU's own trend.</div>
+      <div id="dq-list"></div>
+    </div>
+  </div>
 </div>
 
+</div>
 <div class="footer">S&D PLANNING ENGINE · STATISTICAL · MATHEMATICAL · OPERATIONAL</div>
-</div>
-
 <script>
 /* ════════════════════════════════════════════════════
-   DEMO DATA
+   DEMO DATA — long-format demand history, matches the
+   Excel master template structure
 ════════════════════════════════════════════════════ */
+const DEMO_SKU_MASTER = [
+  {sku:'SKU-2041',name:'Wireless Earbuds Pro',category:'Consumer Electronics',market:'LATAM',plc:'Mature',launch:'2022-03-01',analogy:'',cost:32.5,status:'Active'},
+  {sku:'SKU-1892',name:'USB-C Hub 7-in-1',category:'Peripherals',market:'APAC',plc:'Mature',launch:'2021-11-01',analogy:'',cost:18,status:'Active'},
+  {sku:'SKU-3317',name:'Smart Keyboard',category:'Peripherals',market:'EMEA',plc:'Growth',launch:'2023-09-01',analogy:'',cost:28,status:'Active'},
+  {sku:'SKU-0994',name:'Laptop Stand',category:'Accessories',market:'North America',plc:'Mature',launch:'2020-05-01',analogy:'',cost:12,status:'Active'},
+  {sku:'SKU-2210',name:'Webcam 4K',category:'Consumer Electronics',market:'EMEA',plc:'Mature',launch:'2021-06-01',analogy:'',cost:22,status:'Active'},
+  {sku:'SKU-7701',name:'Smart Ring Tracker',category:'Consumer Electronics',market:'EMEA',plc:'Phase-In',launch:'2025-11-01',analogy:'SKU-3317',cost:65,status:'Active'},
+  {sku:'SKU-7702',name:'Foldable Travel Mouse',category:'Peripherals',market:'APAC',plc:'Phase-In',launch:'2026-01-01',analogy:'SKU-1892',cost:24,status:'Active'},
+  {sku:'SKU-1103',name:'Gaming Headset (Gen 1)',category:'Consumer Electronics',market:'LATAM',plc:'Phase-Out',launch:'2019-02-01',analogy:'',cost:19,status:'Active'},
+];
+
 const DEMO_INV = [
-  {sku:'SKU-2041',name:'Wireless Earbuds Pro',market:'LATAM',stock:320,days:5,rop:800,weekly:64,status:'Critical'},
-  {sku:'SKU-1892',name:'USB-C Hub 7-in-1',market:'APAC',stock:1100,days:12,rop:1500,weekly:92,status:'Low'},
-  {sku:'SKU-3317',name:'Smart Keyboard',market:'EMEA',stock:4200,days:38,rop:1000,weekly:111,status:'Healthy'},
-  {sku:'SKU-0994',name:'Laptop Stand',market:'North America',stock:8900,days:72,rop:2000,weekly:124,status:'Excess'},
-  {sku:'SKU-2210',name:'Webcam 4K',market:'EMEA',stock:650,days:14,rop:900,weekly:46,status:'Low'},
-  {sku:'SKU-4401',name:'Mechanical Mouse',market:'APAC',stock:2800,days:31,rop:1200,weekly:90,status:'Healthy'},
-  {sku:'SKU-1103',name:'Gaming Headset',market:'LATAM',stock:190,days:7,rop:500,weekly:27,status:'Critical'},
-  {sku:'SKU-3892',name:'Portable SSD 1TB',market:'North America',stock:3400,days:29,rop:1100,weekly:117,status:'Healthy'},
-  {sku:'SKU-5512',name:'Monitor 27-inch',market:'EMEA',stock:2100,days:24,rop:800,weekly:88,status:'Healthy'},
-  {sku:'SKU-6634',name:'Cable Organizer',market:'North America',stock:12000,days:88,rop:3000,weekly:136,status:'Excess'},
+  {sku:'SKU-2041',name:'Wireless Earbuds Pro',market:'LATAM',stock:200,weekly:64,rop:300},
+  {sku:'SKU-1892',name:'USB-C Hub 7-in-1',market:'APAC',stock:500,weekly:92,rop:400},
+  {sku:'SKU-3317',name:'Smart Keyboard',market:'EMEA',stock:1150,weekly:111,rop:450},
+  {sku:'SKU-0994',name:'Laptop Stand',market:'North America',stock:590,weekly:124,rop:500},
+  {sku:'SKU-2210',name:'Webcam 4K',market:'EMEA',stock:120,weekly:46,rop:180},
+  {sku:'SKU-7701',name:'Smart Ring Tracker',market:'EMEA',stock:45,weekly:21,rop:80},
+  {sku:'SKU-7702',name:'Foldable Travel Mouse',market:'APAC',stock:20,weekly:14,rop:60},
+  {sku:'SKU-1103',name:'Gaming Headset (Gen 1)',market:'LATAM',stock:25,weekly:27,rop:120},
 ];
-const DEMO_FC=[
-  {market:'EMEA',apr:7200,may:7600,jun:8800,jul:8400,aug:8100,sep:7900},
-  {market:'North America',apr:9100,may:9400,jun:10200,jul:11000,aug:10600,sep:9800},
-  {market:'APAC',apr:5400,may:5800,jun:6700,jul:7200,aug:7600,sep:8100},
-  {market:'LATAM',apr:2100,may:2300,jun:2600,jul:2900,aug:3100,sep:3400},
-  {market:'MEA',apr:1400,may:1500,jun:1700,jul:1900,aug:2000,sep:2200},
+
+const DEMO_HIERARCHY = [
+  {region:'EMEA',market:'EMEA',country:'France / Germany / UK'},
+  {region:'Americas',market:'North America',country:'USA / Canada'},
+  {region:'Americas',market:'LATAM',country:'Brazil / Mexico'},
+  {region:'APAC',market:'APAC',country:'India / Vietnam / Singapore'},
+  {region:'MEA',market:'MEA',country:'UAE / South Africa'},
 ];
+
 const DEMO_POS=[
-  {po:'PO-88412',supplier:'NORD-03',sku:'SKU-3317',product:'Smart Keyboard',units:2400,ordered:'Apr 28',eta:'May 8',status:'In Transit'},
-  {po:'PO-88491',supplier:'ASIA-07',sku:'SKU-2041',product:'Wireless Earbuds Pro',units:5000,ordered:'May 1',eta:'Dec 5',status:'Pending'},
-  {po:'PO-88502',supplier:'APAC-05',sku:'SKU-1892',product:'USB-C Hub 7-in-1',units:3200,ordered:'May 2',eta:'May 22',status:'Confirmed'},
-  {po:'PO-88399',supplier:'EMEA-12',sku:'SKU-2210',product:'Webcam 4K',units:1800,ordered:'Apr 21',eta:'May 5',status:'Delayed'},
-  {po:'PO-88517',supplier:'NORD-03',sku:'SKU-4401',product:'Mechanical Mouse',units:4000,ordered:'May 3',eta:'May 21',status:'Pending'},
+  {po:'PO-88412',supplier:'NORD-03',sku:'SKU-3317',product:'Smart Keyboard',units:2400,ordered:'28-Apr-2026',eta:'08-May-2026',status:'In Transit'},
+  {po:'PO-88491',supplier:'ASIA-07',sku:'SKU-2041',product:'Wireless Earbuds Pro',units:5000,ordered:'01-May-2026',eta:'05-Dec-2026',status:'Pending'},
+  {po:'PO-88502',supplier:'APAC-05',sku:'SKU-1892',product:'USB-C Hub 7-in-1',units:3200,ordered:'02-May-2026',eta:'22-May-2026',status:'Confirmed'},
+  {po:'PO-88399',supplier:'EMEA-12',sku:'SKU-2210',product:'Webcam 4K',units:1800,ordered:'21-Apr-2026',eta:'05-May-2026',status:'Delayed'},
+  {po:'PO-88517',supplier:'NORD-03',sku:'SKU-7701',product:'Smart Ring Tracker',units:1500,ordered:'03-May-2026',eta:'21-May-2026',status:'Pending'},
 ];
 const DEMO_SUPS=[
   {id:'NORD-03',region:'EMEA',otd:96,quality:99.1,lead:18,status:'Preferred'},
@@ -802,42 +779,43 @@ const DEMO_SUPS=[
   {id:'LATAM-02',region:'LATAM',otd:71,quality:96.1,lead:31,status:'At Risk'},
   {id:'APAC-05',region:'APAC',otd:93,quality:99.5,lead:20,status:'Preferred'},
 ];
-
-function generateHistory(weekly,n=52){
+function generateMonthlyHistory(monthlyBase,months=24,trend=0,seasonalAmp=0.18,seed=1,startYear=2024,startMonth=1){
+  let s=seed;
+  function rand(){s=(s*9301+49297)%233280;return s/233280;}
   const arr=[];
-  let base=Math.max(1,weekly);
-  for(let i=0;i<n;i++){
-    const seasonal=1+0.25*Math.sin((i/52)*2*Math.PI)+0.1*Math.sin((i/13)*2*Math.PI);
-    const trend=1+(i/n)*0.15;
-    const noise=0.8+Math.random()*0.4;
-    arr.push(Math.max(1,Math.round(base*seasonal*trend*noise)));
+  let y=startYear,m=startMonth;
+  for(let i=0;i<months;i++){
+    const seasonal=1+seasonalAmp*((m===11||m===12||m===6||m===7)?1:((m===1||m===2)?-0.4:0));
+    const trendMult=1+trend*i;
+    const noise=1+(rand()*0.16-0.08);
+    const value=Math.max(1,Math.round(monthlyBase*seasonal*trendMult*noise));
+    const period=`${y}-${String(m).padStart(2,'0')}`;
+    arr.push({period,value,note:''});
+    m++; if(m>12){m=1;y++;}
   }
   return arr;
 }
 
-let state={inventory:[],forecast:[],pos:[],suppliers:[]};
+let state={
+  skuMaster:[], inventory:[], pos:[], suppliers:[], hierarchy:[],
+  demandHistory:{} // map: sku -> array of {period, value, note}
+};
 let currentSKUHistory=[];
 let dashboardHealthPeriod=0;
-const MONTH_KEYS=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-const MONTHS_IN_YEAR=12;
-const WEEKS_PER_MONTH=52/12;
-const BASELINE_PROJECTION_MONTHS=3;
-
-// FIX #8: persist model params per SKU index
+let lastSKUIdx=0;
 let skuModelParams={};
+let hierarchyMode='top';
+let selectedPLCStage='Phase-In';
+let selectedNPISku=null;
 
 function getSKUParams(idx){
   if(!skuModelParams[idx]) skuModelParams[idx]={
     maWindow:4, maType:'simple',
     esAlpha:0.3, esOptimize:'no',
-    hwAlpha:0.3, hwBeta:0.1, hwGamma:0.2,
-    arimaP:1, arimaD:1, arimaQ:1,
-    sarimaP:1, sarimaD:1, sarimaQ:1,
-    sarimaBigP:1, sarimaBigD:1, sarimaBigQ:1, sarimaM:12
+    hwAlpha:0.3, hwBeta:0.1, hwGamma:0.2
   };
   return skuModelParams[idx];
 }
-
 function saveParamsFromUI(idx){
   const p=getSKUParams(idx);
   p.maWindow=parseInt(document.getElementById('ma-window').value)||4;
@@ -847,18 +825,7 @@ function saveParamsFromUI(idx){
   p.hwAlpha=parseFloat(document.getElementById('hw-alpha').value)||0.3;
   p.hwBeta=parseFloat(document.getElementById('hw-beta').value)||0.1;
   p.hwGamma=parseFloat(document.getElementById('hw-gamma').value)||0.2;
-  p.arimaP=parseInt(document.getElementById('arima-p').value)||1;
-  p.arimaD=parseInt(document.getElementById('arima-d').value)||1;
-  p.arimaQ=parseInt(document.getElementById('arima-q').value)||1;
-  p.sarimaP=parseInt(document.getElementById('sarima-p').value)||1;
-  p.sarimaD=parseInt(document.getElementById('sarima-d').value)||1;
-  p.sarimaQ=parseInt(document.getElementById('sarima-q').value)||1;
-  p.sarimaBigP=parseInt(document.getElementById('sarima-P').value)||1;
-  p.sarimaBigD=parseInt(document.getElementById('sarima-D').value)||1;
-  p.sarimaBigQ=parseInt(document.getElementById('sarima-Q').value)||1;
-  p.sarimaM=parseInt(document.getElementById('sarima-m').value)||12;
 }
-
 function loadParamsToUI(idx){
   const p=getSKUParams(idx);
   document.getElementById('ma-window').value=p.maWindow;
@@ -868,20 +835,8 @@ function loadParamsToUI(idx){
   document.getElementById('hw-alpha').value=p.hwAlpha;
   document.getElementById('hw-beta').value=p.hwBeta;
   document.getElementById('hw-gamma').value=p.hwGamma;
-  document.getElementById('arima-p').value=p.arimaP;
-  document.getElementById('arima-d').value=p.arimaD;
-  document.getElementById('arima-q').value=p.arimaQ;
-  document.getElementById('sarima-p').value=p.sarimaP;
-  document.getElementById('sarima-d').value=p.sarimaD;
-  document.getElementById('sarima-q').value=p.sarimaQ;
-  document.getElementById('sarima-P').value=p.sarimaBigP;
-  document.getElementById('sarima-D').value=p.sarimaBigD;
-  document.getElementById('sarima-Q').value=p.sarimaBigQ;
-  document.getElementById('sarima-m').value=p.sarimaM;
 }
 
-// FIX #6 + #8: Save old SKU params before switching, load new ones
-let lastSKUIdx=0;
 function onSKUChange(){
   saveParamsFromUI(lastSKUIdx);
   const newIdx=parseInt(document.getElementById('stat-sku').value)||0;
@@ -892,39 +847,68 @@ function onSKUChange(){
 }
 
 function loadDemo(){
-  state={inventory:[...DEMO_INV],forecast:[...DEMO_FC],pos:[...DEMO_POS],suppliers:[...DEMO_SUPS]};
+  const demandHistory={};
+  demandHistory['SKU-2041']=generateMonthlyHistory(280,24,0.003,0.18,11);
+  demandHistory['SKU-1892']=generateMonthlyHistory(400,24,0.004,0.18,22);
+  demandHistory['SKU-3317']=generateMonthlyHistory(480,24,0.012,0.18,33);
+  demandHistory['SKU-0994']=generateMonthlyHistory(540,24,-0.002,0.18,44);
+  demandHistory['SKU-2210']=generateMonthlyHistory(200,24,0.001,0.18,55);
+  demandHistory['SKU-7701']=generateMonthlyHistory(90,2,0.35,0,66,2025,11);
+  demandHistory['SKU-7702']=generateMonthlyHistory(60,1,0,0,77,2026,1);
+  demandHistory['SKU-1103']=generateMonthlyHistory(150,24,-0.025,0.18,88);
+
+  state={
+    skuMaster:JSON.parse(JSON.stringify(DEMO_SKU_MASTER)),
+    inventory:JSON.parse(JSON.stringify(DEMO_INV)),
+    pos:JSON.parse(JSON.stringify(DEMO_POS)),
+    suppliers:JSON.parse(JSON.stringify(DEMO_SUPS)),
+    hierarchy:JSON.parse(JSON.stringify(DEMO_HIERARCHY)),
+    demandHistory
+  };
   document.getElementById('data-status').textContent='DEMO DATA';
   document.getElementById('data-status').className='pill pill-amber';
   skuModelParams={};
   lastSKUIdx=0;
+  selectedNPISku=null;
   populateSKUSelect();
   renderAll();
 }
 
 function populateSKUSelect(){
   const sel=document.getElementById('stat-sku');
-  if(!state.inventory.length){
+  // Statistical models apply to Mature/Growth SKUs with enough history (>=4 points)
+  const eligible=state.skuMaster.filter(s=>{
+    const hist=state.demandHistory[s.sku]||[];
+    return hist.length>=4 && s.plc!=='Phase-In';
+  });
+  if(!eligible.length){
     sel.innerHTML='<option value="">— load data first —</option>';
+    currentSKUHistory=[];
     return;
   }
-  sel.innerHTML=state.inventory.map((i,idx)=>`<option value="${idx}">${i.sku} — ${i.name}</option>`).join('');
+  sel.innerHTML=eligible.map((s)=>{
+    const idx=state.skuMaster.indexOf(s);
+    return `<option value="${idx}">${s.sku} — ${s.name}</option>`;
+  }).join('');
+  if(![...sel.options].some(o=>o.value===String(lastSKUIdx))) lastSKUIdx=parseInt(sel.options[0].value);
   sel.value=String(lastSKUIdx);
   loadParamsToUI(lastSKUIdx);
   updateCurrentHistory();
 }
 
 function updateCurrentHistory(){
-  if(!state.inventory.length){currentSKUHistory=[];return;}
-  const idx=parseInt(document.getElementById('stat-sku').value)||0;
-  const sku=state.inventory[idx]||state.inventory[0];
-  currentSKUHistory=generateHistory(sku.weekly||100);
+  const sel=document.getElementById('stat-sku');
+  const idx=parseInt(sel.value);
+  if(isNaN(idx)||!state.skuMaster[idx]){currentSKUHistory=[];return;}
+  const sku=state.skuMaster[idx];
+  const hist=state.demandHistory[sku.sku]||[];
+  currentSKUHistory=hist.map(h=>h.value);
 }
 
 /* ════════════════════════════════════════════════════
    KEYBOARD NAVIGATION
-   FIX #11: arrow-key support for nav and model tabs
 ════════════════════════════════════════════════════ */
-const TABS=['dashboard','statistical','eoq','forecast','inventory','suppliers','risks'];
+const TABS=['dashboard','statistical','npi','hierarchy','eoq','inventory','suppliers','risks'];
 function navKeydown(event,idx){
   const btns=document.querySelectorAll('.nav-wrap .nav-btn');
   if(event.key==='ArrowRight'||event.key==='ArrowDown'){
@@ -937,7 +921,7 @@ function navKeydown(event,idx){
     btns[prev].focus();btns[prev].click();
   }
 }
-const MODEL_KEYS=['ma','es','hw','arima','sarima','compare'];
+const MODEL_KEYS=['ma','es','hw','compare'];
 function modelKeydown(event,idx){
   const btns=document.querySelectorAll('.model-tabs .model-tab');
   if(event.key==='ArrowRight'||event.key==='ArrowDown'){
@@ -967,10 +951,13 @@ function switchTab(t){
   activeBtn.setAttribute('tabindex','0');
   if(t==='statistical') runAllModels();
   if(t==='eoq'){calcEOQ();calcSS();renderBatchEOQ();}
+  if(t==='npi') renderNPITab();
+  if(t==='hierarchy') renderHierarchy();
+  if(t==='risks') renderRisks();
 }
 
 function switchModel(m){
-  document.querySelectorAll('.model-tabs .model-tab').forEach((b,i)=>{
+  document.querySelectorAll('.model-tabs .model-tab').forEach((b)=>{
     b.classList.remove('active');
     b.setAttribute('aria-selected','false');
     b.setAttribute('tabindex','-1');
@@ -985,26 +972,23 @@ function switchModel(m){
   if(m==='ma') runMA();
   else if(m==='es') runES();
   else if(m==='hw') runHW();
-  else if(m==='arima') runARIMA();
-  else if(m==='sarima') runSARIMA();
   else if(m==='compare') runComparison();
 }
 
 /* ════════════════════════════════════════════════════
    STATISTICAL MATH ENGINE
 ════════════════════════════════════════════════════ */
-
 function mape(actual,forecast){
   const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.a&&p.f!=null&&!isNaN(p.f));
   if(!pairs.length) return 0;
   return pairs.reduce((s,p)=>s+Math.abs((p.a-p.f)/p.a),0)/pairs.length*100;
 }
-function mae(actual,forecast){
+function maeFn(actual,forecast){
   const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.f!=null&&!isNaN(p.f));
   if(!pairs.length) return 0;
   return pairs.reduce((s,p)=>s+Math.abs(p.a-p.f),0)/pairs.length;
 }
-function rmse(actual,forecast){
+function rmseFn(actual,forecast){
   const pairs=actual.map((a,i)=>({a,f:forecast[i]})).filter(p=>p.f!=null&&!isNaN(p.f));
   if(!pairs.length) return 0;
   return Math.sqrt(pairs.reduce((s,p)=>s+Math.pow(p.a-p.f,2),0)/pairs.length);
@@ -1018,29 +1002,22 @@ function stdDev(arr){
   const valid=arr.filter(v=>v!=null&&!isNaN(v));
   return valid.length?Math.sqrt(valid.reduce((s,v)=>s+Math.pow(v-m,2),0)/valid.length):0;
 }
-function cvOf(arr){const m=mean(arr);return m?stdDev(arr)/m:0;}
-function aic(n,mse,k){return n>0&&mse>0?n*Math.log(mse)+2*k:0;}
 
-// FIX #4: Proper stockout probability using normal distribution approximation
-// Uses Φ(z) where z = (days_cover * daily_rate - mean_demand_over_lead_time) / sigma_lt
-function stockoutProbability(daysCover, weeklyDemand){
-  const sigma=weeklyDemand*0.2; // demand std dev (weekly)
-  const muLT=weeklyDemand*2; // mean demand over 14-day default lead time
-  const sigmaLT=Math.sqrt(14/7)*sigma; // sigma over lead time
-  const stockOnHand=daysCover*(weeklyDemand/7);
-  if(sigmaLT<=0) return daysCover<14?50:5;
-  const z=(stockOnHand-muLT)/sigmaLT;
-  // Φ(-z) = probability of stockout = 1 - Φ(z)
-  return Math.max(1,Math.min(99,Math.round((1-normalCDF(z))*100)));
-}
-
-// Standard normal CDF approximation (Abramowitz & Stegun)
 function normalCDF(z){
   const t=1/(1+0.2316419*Math.abs(z));
   const poly=t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
   const phi=Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
   const p=1-phi*poly;
   return z>=0?p:1-p;
+}
+function stockoutProbability(daysCover, weeklyDemand){
+  const sigma=weeklyDemand*0.2;
+  const muLT=weeklyDemand*2;
+  const sigmaLT=Math.sqrt(14/7)*sigma;
+  const stockOnHand=daysCover*(weeklyDemand/7);
+  if(sigmaLT<=0) return daysCover<14?50:5;
+  const z=(stockOnHand-muLT)/sigmaLT;
+  return Math.max(1,Math.min(99,Math.round((1-normalCDF(z))*100)));
 }
 
 /* ── Moving Average ── */
@@ -1090,7 +1067,6 @@ function optimizeAlpha(data){
 }
 
 /* ── Holt-Winters ── */
-// FIX #2: Proper guard + warning for short data
 function computeHW(data,alpha,beta,gamma,m=4){
   const hwWarn=document.getElementById('hw-warn');
   let usedFallback=false;
@@ -1101,7 +1077,6 @@ function computeHW(data,alpha,beta,gamma,m=4){
   if(hwWarn) hwWarn.style.display=usedFallback?'block':'none';
 
   if(data.length<4){
-    // Not enough data at all — return flat forecast
     const f=mean(data)||1;
     return {fitted:data.map(()=>Math.round(f)),forecast:Array(13).fill(Math.round(f))};
   }
@@ -1131,133 +1106,6 @@ function computeHW(data,alpha,beta,gamma,m=4){
     const seasonal=S[h%m]||1;
     forecast.push(Math.max(1,Math.round((L+h*T)*seasonal)));
   }
-  return {fitted,forecast};
-}
-
-/* ── ARIMA ── */
-function differenceData(data,d){
-  let result=[...data];
-  for(let i=0;i<d;i++){
-    const diff=[];
-    for(let j=1;j<result.length;j++) diff.push(result[j]-result[j-1]);
-    result=diff;
-  }
-  return result;
-}
-
-function fitAR(data,p){
-  if(p===0||data.length<=p) return {coeffs:[],intercept:mean(data)||0};
-  const n=data.length;
-  const y=data.slice(p);
-  const X=[];
-  for(let i=p;i<n;i++){
-    const row=[];
-    for(let j=1;j<=p;j++) row.push(data[i-j]);
-    X.push(row);
-  }
-  let coeffs=Array(p).fill(0);
-  let intercept=mean(y)||0;
-  const lr=0.00005;
-  const iters=1000;
-  for(let iter=0;iter<iters;iter++){
-    const preds=X.map(row=>intercept+row.reduce((s,v,j)=>s+v*coeffs[j],0));
-    const errors=y.map((v,i)=>v-preds[i]);
-    const errMean=mean(errors)||0;
-    intercept+=lr*errMean;
-    for(let j=0;j<p;j++){
-      const grad=mean(errors.map((e,i)=>e*(X[i][j]||0)))||0;
-      coeffs[j]+=lr*grad;
-    }
-  }
-  return {coeffs,intercept};
-}
-
-function computeARIMA(data,p,d,q){
-  if(data.length<Math.max(p,q)+d+2){
-    const f=mean(data)||1;
-    return {fitted:data.map(()=>Math.round(f)),forecast:Array(13).fill(Math.round(f))};
-  }
-  const diffed=differenceData(data,d);
-  const safeP=Math.min(p,diffed.length-2);
-  const {coeffs,intercept}=fitAR(diffed,safeP);
-  const fittedDiff=[];
-  const errors=[];
-  for(let i=0;i<diffed.length;i++){
-    if(i<Math.max(safeP,q)){fittedDiff.push(diffed[i]);errors.push(0);continue;}
-    let pred=intercept;
-    for(let j=0;j<safeP;j++) pred+=coeffs[j]*(diffed[i-1-j]||0);
-    for(let j=0;j<q&&j<errors.length;j++) pred+=0.1*(errors[errors.length-1-j]||0);
-    fittedDiff.push(pred);
-    errors.push(diffed[i]-pred);
-  }
-  const extDiff=[...diffed];
-  const extErrors=[...errors];
-  const fcDiff=[];
-  for(let h=0;h<13;h++){
-    let pred=intercept;
-    for(let j=0;j<safeP;j++) pred+=coeffs[j]*(extDiff[extDiff.length-1-j]||0);
-    for(let j=0;j<q;j++) pred+=0.1*(extErrors[extErrors.length-1-j]||0);
-    fcDiff.push(pred);
-    extDiff.push(pred);
-    extErrors.push(0);
-  }
-  let last=data[data.length-1]||mean(data)||1;
-  const forecast=[];
-  for(let h=0;h<13;h++){
-    if(d===0) forecast.push(Math.max(1,Math.round(fcDiff[h]||last)));
-    else{last=Math.max(1,Math.round(last+(fcDiff[h]||0)));forecast.push(last);}
-  }
-  // Reconstruct fitted on original scale
-  let val=data[0]||1;
-  const fitted=[val];
-  for(let i=0;i<fittedDiff.length-1;i++){
-    if(d===0) fitted.push(Math.max(1,Math.round(fittedDiff[i])));
-    else{val=Math.max(1,Math.round(val+(fittedDiff[i+1]-fittedDiff[i])));fitted.push(val);}
-  }
-  return {fitted,forecast};
-}
-
-/* ── SARIMA ── */
-function computeSARIMA(data,p,d,q,P,D,Q,m){
-  if(data.length<2*m+d+D*m){
-    return computeARIMA(data,p,d,q); // fallback to ARIMA
-  }
-  const diffed=differenceData(data,d);
-  let sdiffed=[...diffed];
-  for(let i=0;i<D;i++){
-    const sd=[];
-    for(let j=m;j<sdiffed.length;j++) sd.push(sdiffed[j]-sdiffed[j-m]);
-    if(sd.length>2) sdiffed=sd;
-  }
-  const totalLags=Math.max(1,Math.min(p+P*m,sdiffed.length-2));
-  const {coeffs,intercept}=fitAR(sdiffed,totalLags);
-  const extSD=[...sdiffed];
-  const extErrors=Array(sdiffed.length).fill(0);
-  const fcSD=[];
-  for(let h=0;h<13;h++){
-    let pred=intercept;
-    for(let j=0;j<coeffs.length&&j<extSD.length;j++) pred+=(coeffs[j]||0)*(extSD[extSD.length-1-j]||0);
-    const seasonalError=extSD.length>=m?(extSD[extSD.length-m]||0)-pred:0;
-    pred+=0.1*Q*seasonalError;
-    fcSD.push(pred);
-    extSD.push(pred);
-    extErrors.push(0);
-  }
-  let lastVal=data[data.length-1]||mean(data)||1;
-  const avgDiff=mean(sdiffed)||0;
-  const forecast=[];
-  for(let h=0;h<13;h++){
-    const seasonalIdx=data.length-m+(h%m);
-    const win=data.slice(Math.max(0,seasonalIdx-m),Math.min(data.length,seasonalIdx+1));
-    const seasonFactor=win.length&&mean(win)?((data[Math.min(seasonalIdx,data.length-1)]||mean(win))/mean(win)):1;
-    lastVal=Math.max(1,Math.round(lastVal*(0.97+0.06*Math.max(0.5,Math.min(1.5,seasonFactor)))+(fcSD[h]||avgDiff)));
-    forecast.push(lastVal);
-  }
-  const fitted=data.map((v,i)=>{
-    if(i<2) return v;
-    const seasonal=i>=m?data[i-m]:v;
-    return Math.max(1,Math.round(0.7*v+0.3*seasonal));
-  });
   return {fitted,forecast};
 }
 
@@ -1327,12 +1175,11 @@ function renderLineChart(svgId,actual,fitted,forecast,colors){
   `;
 }
 
-function renderResults(containerId,{mapeVal,maeVal,rmseVal,aicVal,extra}){
+function renderResults(containerId,{mapeVal,maeVal,rmseVal,extra}){
   const items=[
     {label:'MAPE',val:(mapeVal||0).toFixed(2)+'%',sub:'Mean Abs % Error'},
     {label:'MAE',val:Math.round(maeVal||0).toLocaleString(),sub:'Mean Abs Error'},
     {label:'RMSE',val:Math.round(rmseVal||0).toLocaleString(),sub:'Root Mean Sq Error'},
-    ...(aicVal!==undefined?[{label:'AIC',val:(aicVal||0).toFixed(1),sub:'Lower = better fit'}]:[]),
     ...(extra||[]),
   ];
   document.getElementById(containerId).innerHTML=items.map(i=>`
@@ -1347,9 +1194,9 @@ function renderForecastMiniTable(containerId,forecast,band){
   const weeks=forecast.slice(0,6);
   document.getElementById(containerId).innerHTML=`
     <table style="font-size:11px">
-      <thead><tr><th>Week</th><th>Forecast</th><th>Low (95%)</th><th>High (95%)</th></tr></thead>
+      <thead><tr><th>Month</th><th>Forecast</th><th>Low (95%)</th><th>High (95%)</th></tr></thead>
       <tbody>${weeks.map((f,i)=>`<tr>
-        <td>W+${i+1}</td>
+        <td>M+${i+1}</td>
         <td style="color:var(--teal);font-weight:600">${(f||0).toLocaleString()}</td>
         <td style="color:var(--text3)">${band&&band[i]?band[i].low.toLocaleString():'—'}</td>
         <td style="color:var(--text3)">${band&&band[i]?band[i].high.toLocaleString():'—'}</td>
@@ -1357,7 +1204,6 @@ function renderForecastMiniTable(containerId,forecast,band){
     </table>`;
 }
 
-/* FIX #5: Guard all model runners when no data loaded */
 function noDataPlaceholder(resultId,chartId,tableId){
   const el=document.getElementById(resultId);
   if(el) el.innerHTML='<div class="empty-state"><div class="empty-state-icon">📊</div>Load data to run this model</div>';
@@ -1367,16 +1213,15 @@ function noDataPlaceholder(resultId,chartId,tableId){
   if(tbl) tbl.innerHTML='';
 }
 
-/* ── RUN MODELS ── */
 function runAllModels(){
   if(!currentSKUHistory.length){
-    ['ma','es','hw','arima','sarima'].forEach(m=>{
+    ['ma','es','hw'].forEach(m=>{
       noDataPlaceholder(`${m}-results`,`${m}-chart`,`${m}-forecast-table`);
     });
-    document.getElementById('comparison-body').innerHTML='<tr><td colspan="8" class="empty-state">Load data to compare models</td></tr>';
+    document.getElementById('comparison-body').innerHTML='<tr><td colspan="7" class="empty-state">Load data to compare models</td></tr>';
     return;
   }
-  runMA(); runES(); runHW(); runARIMA(); runSARIMA();
+  runMA(); runES(); runHW();
   updateBestModel();
 }
 
@@ -1390,11 +1235,10 @@ function runMA(){
   const validFitted=result.fitted.filter(v=>v!=null);
   const validActual=data.slice(data.length-validFitted.length);
   const m=mape(validActual,validFitted);
-  const ma2=mae(validActual,validFitted);
-  const rm=rmse(validActual,validFitted);
-  const aicV=aic(validActual.length,rm*rm,w);
-  renderResults('ma-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Window',val:w,sub:'periods'}]});
-  renderLineChart('ma-chart',data.slice(-26),null,result.forecast,{actual:'#4F8EF7',forecast:'#22D3A4'});
+  const ma2=maeFn(validActual,validFitted);
+  const rm=rmseFn(validActual,validFitted);
+  renderResults('ma-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,extra:[{label:'Window',val:w,sub:'months'}]});
+  renderLineChart('ma-chart',data.slice(-18),null,result.forecast,{actual:'#4F8EF7',forecast:'#22D3A4'});
   renderForecastMiniTable('ma-forecast-table',result.forecast,confidenceBand(result.forecast,0.1));
 }
 
@@ -1406,11 +1250,10 @@ function runES(){
   if(optimize){alpha=optimizeAlpha(data);document.getElementById('es-alpha').value=alpha.toFixed(2);}
   const result=computeSES(data,alpha);
   const m=mape(data,result.fitted);
-  const ma2=mae(data,result.fitted);
-  const rm=rmse(data,result.fitted);
-  const aicV=aic(data.length,rm*rm,2);
-  renderResults('es-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Alpha',val:alpha.toFixed(3),sub:'smoothing factor'}]});
-  renderLineChart('es-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(245,158,11,0.5)',forecast:'#F59E0B',band:'rgba(245,158,11,0.08)'});
+  const ma2=maeFn(data,result.fitted);
+  const rm=rmseFn(data,result.fitted);
+  renderResults('es-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,extra:[{label:'Alpha',val:alpha.toFixed(3),sub:'responsiveness'}]});
+  renderLineChart('es-chart',data.slice(-18),result.fitted.slice(-18),result.forecast,{actual:'#4F8EF7',fitted:'rgba(245,158,11,0.5)',forecast:'#F59E0B',band:'rgba(245,158,11,0.08)'});
   renderForecastMiniTable('es-forecast-table',result.forecast,confidenceBand(result.forecast,0.12));
 }
 
@@ -1420,120 +1263,73 @@ function runHW(){
   const alpha=Math.max(0.01,Math.min(0.99,parseFloat(document.getElementById('hw-alpha').value)||0.3));
   const beta=Math.max(0.01,Math.min(0.99,parseFloat(document.getElementById('hw-beta').value)||0.1));
   const gamma=Math.max(0.01,Math.min(0.99,parseFloat(document.getElementById('hw-gamma').value)||0.2));
-  const result=computeHW(data,alpha,beta,gamma,4);
+  const result=computeHW(data,alpha,beta,gamma,12);
   const m=mape(data,result.fitted);
-  const ma2=mae(data,result.fitted);
-  const rm=rmse(data,result.fitted);
-  const aicV=aic(data.length,rm*rm,3);
-  renderResults('hw-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV});
-  renderLineChart('hw-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(167,139,250,0.5)',forecast:'#A78BFA',band:'rgba(167,139,250,0.08)'});
+  const ma2=maeFn(data,result.fitted);
+  const rm=rmseFn(data,result.fitted);
+  renderResults('hw-results',{mapeVal:m,maeVal:ma2,rmseVal:rm});
+  renderLineChart('hw-chart',data.slice(-18),result.fitted.slice(-18),result.forecast,{actual:'#4F8EF7',fitted:'rgba(167,139,250,0.5)',forecast:'#A78BFA',band:'rgba(167,139,250,0.08)'});
   renderForecastMiniTable('hw-forecast-table',result.forecast,confidenceBand(result.forecast,0.13));
 }
 
-function runARIMA(){
-  if(!currentSKUHistory.length){noDataPlaceholder('arima-results','arima-chart','arima-forecast-table');return;}
-  const data=currentSKUHistory;
-  const p=Math.max(0,parseInt(document.getElementById('arima-p').value)||1);
-  const d=Math.max(0,parseInt(document.getElementById('arima-d').value)||1);
-  const q=Math.max(0,parseInt(document.getElementById('arima-q').value)||1);
-  const result=computeARIMA(data,p,d,q);
-  const alignedActual=data.slice(-result.fitted.length);
-  const m=mape(alignedActual,result.fitted)||0;
-  const ma2=mae(alignedActual,result.fitted);
-  const rm=rmse(alignedActual,result.fitted);
-  const aicV=aic(data.length,rm*rm,p+d+q);
-  renderResults('arima-results',{mapeVal:m,maeVal:ma2,rmseVal:rm,aicVal:aicV,extra:[{label:'Order',val:`(${p},${d},${q})`,sub:'p,d,q'}]});
-  renderLineChart('arima-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(167,139,250,0.5)',forecast:'#A78BFA',band:'rgba(167,139,250,0.1)'});
-  renderForecastMiniTable('arima-forecast-table',result.forecast,confidenceBand(result.forecast,0.15));
-}
-
-function runSARIMA(){
-  if(!currentSKUHistory.length){noDataPlaceholder('sarima-results','sarima-chart','sarima-forecast-table');return;}
-  const data=currentSKUHistory;
-  const p=Math.max(0,parseInt(document.getElementById('sarima-p').value)||1);
-  const d=Math.max(0,parseInt(document.getElementById('sarima-d').value)||1);
-  const q=Math.max(0,parseInt(document.getElementById('sarima-q').value)||1);
-  const P=Math.max(0,parseInt(document.getElementById('sarima-P').value)||1);
-  const D=Math.max(0,parseInt(document.getElementById('sarima-D').value)||1);
-  const Q=Math.max(0,parseInt(document.getElementById('sarima-Q').value)||1);
-  const m=Math.max(2,parseInt(document.getElementById('sarima-m').value)||12);
-  const result=computeSARIMA(data,p,d,q,P,D,Q,m);
-  const alignedActual=data.slice(-result.fitted.length);
-  const mapeV=mape(alignedActual,result.fitted)||0;
-  const maeV=mae(alignedActual,result.fitted);
-  const rmseV=rmse(alignedActual,result.fitted);
-  const aicV=aic(data.length,rmseV*rmseV,p+d+q+P+D+Q);
-  renderResults('sarima-results',{mapeVal:mapeV,maeVal:maeV,rmseVal:rmseV,aicVal:aicV,extra:[{label:'Season m',val:m,sub:'seasonal period'}]});
-  renderLineChart('sarima-chart',data.slice(-26),result.fitted.slice(-26),result.forecast,{actual:'#4F8EF7',fitted:'rgba(244,114,182,0.5)',forecast:'#F472B6',band:'rgba(244,114,182,0.08)'});
-  renderForecastMiniTable('sarima-forecast-table',result.forecast,confidenceBand(result.forecast,0.14));
-}
-
 function updateBestModel(){
-  if(!currentSKUHistory.length){document.getElementById('d-best-model').textContent='—';return;}
+  if(!currentSKUHistory.length){return;}
   const data=currentSKUHistory;
   const models=[
-    {name:'SMA',fn:()=>{const r=computeSMA(data,4);const f=r.fitted.filter(v=>v!=null);return mape(data.slice(-f.length),f);}},
-    {name:'SES',fn:()=>{const r=computeSES(data,0.3);return mape(data,r.fitted);}},
-    {name:'Holt-Winters',fn:()=>{const r=computeHW(data,0.3,0.1,0.2,4);return mape(data,r.fitted);}},
-    {name:'ARIMA',fn:()=>{const r=computeARIMA(data,1,1,1);return mape(data.slice(-r.fitted.length),r.fitted)||99;}},
-    {name:'SARIMA',fn:()=>{const r=computeSARIMA(data,1,1,1,1,1,1,12);return mape(data.slice(-r.fitted.length),r.fitted)||99;}},
+    {name:'Moving Average',fn:()=>{const r=computeSMA(data,4);const f=r.fitted.filter(v=>v!=null);return mape(data.slice(-f.length),f);}},
+    {name:'Exponential Smoothing',fn:()=>{const r=computeSES(data,0.3);return mape(data,r.fitted);}},
+    {name:'Holt-Winters',fn:()=>{const r=computeHW(data,0.3,0.1,0.2,12);return mape(data,r.fitted);}},
   ];
   let best={name:'—',mape:Infinity};
   models.forEach(m=>{try{const v=m.fn();if(isFinite(v)&&v<best.mape){best={name:m.name,mape:v};}}catch(e){}});
-  document.getElementById('d-best-model').textContent=best.name;
+  return best;
 }
 
 function runComparison(){
   if(!currentSKUHistory.length){
-    document.getElementById('comparison-body').innerHTML='<tr><td colspan="8" class="empty-state">Load data to compare models</td></tr>';
+    document.getElementById('comparison-body').innerHTML='<tr><td colspan="7" class="empty-state">Load data to compare models</td></tr>';
     document.getElementById('compare-chart').innerHTML='';
     return;
   }
   const data=currentSKUHistory;
   const models=[
-    {name:'SMA(4)',run:()=>{const r=computeSMA(data,4);const f=r.fitted.filter(v=>v!=null);const a=data.slice(-f.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,f),maeV:mae(a,f),rmseV:rmse(a,f),k:4,bestFor:'Stable demand, no trend',color:'var(--teal)'};}},
-    {name:'WMA(4)',run:()=>{const r=computeWMA(data,4);const f=r.fitted.filter(v=>v!=null);const a=data.slice(-f.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,f),maeV:mae(a,f),rmseV:rmse(a,f),k:4,bestFor:'Recency-weighted stable',color:'var(--blue)'};}},
-    {name:'SES(α=0.3)',run:()=>{const r=computeSES(data,0.3);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(data,r.fitted),maeV:mae(data,r.fitted),rmseV:rmse(data,r.fitted),k:2,bestFor:'No trend/seasonality',color:'var(--amber)'};}},
-    {name:'Holt-Winters',run:()=>{const r=computeHW(data,0.3,0.1,0.2,4);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(data,r.fitted),maeV:mae(data,r.fitted),rmseV:rmse(data,r.fitted),k:3,bestFor:'Trend + seasonal',color:'var(--purple)'};}},
-    {name:'ARIMA(1,1,1)',run:()=>{const r=computeARIMA(data,1,1,1);const a=data.slice(-r.fitted.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,r.fitted)||0,maeV:mae(a,r.fitted),rmseV:rmse(a,r.fitted),k:3,bestFor:'Non-stationary trends',color:'var(--red)'};}},
-    {name:'SARIMA(1,1,1)(1,1,1)[12]',run:()=>{const r=computeSARIMA(data,1,1,1,1,1,1,12);const a=data.slice(-r.fitted.length);return{fitted:r.fitted,forecast:r.forecast,mapeV:mape(a,r.fitted)||0,maeV:mae(a,r.fitted),rmseV:rmse(a,r.fitted),k:6,bestFor:'Seasonal + trend patterns',color:'var(--pink)'};}},
+    {name:'Moving Average',run:()=>{const r=computeSMA(data,4);const f=r.fitted.filter(v=>v!=null);const a=data.slice(-f.length);return{forecast:r.forecast,mapeV:mape(a,f),maeV:maeFn(a,f),rmseV:rmseFn(a,f),bestFor:'Stable demand, no trend',color:'var(--teal)'};}},
+    {name:'Exponential Smoothing',run:()=>{const r=computeSES(data,0.3);return{forecast:r.forecast,mapeV:mape(data,r.fitted),maeV:maeFn(data,r.fitted),rmseV:rmseFn(data,r.fitted),bestFor:'Gradual trend, no seasonality',color:'var(--amber)'};}},
+    {name:'Holt-Winters',run:()=>{const r=computeHW(data,0.3,0.1,0.2,12);return{forecast:r.forecast,mapeV:mape(data,r.fitted),maeV:maeFn(data,r.fitted),rmseV:rmseFn(data,r.fitted),bestFor:'Trend + seasonal pattern',color:'var(--purple)'};}},
   ];
-  const results=models.map(m=>{try{return{name:m.name,...m.run()};}catch(e){return{name:m.name,mapeV:99,maeV:0,rmseV:0,forecast:Array(13).fill(mean(data)||1),k:1,bestFor:'Error',color:'var(--text3)'};}});
+  const results=models.map(m=>{try{return{name:m.name,...m.run()};}catch(e){return{name:m.name,mapeV:99,maeV:0,rmseV:0,forecast:Array(13).fill(mean(data)||1),bestFor:'Error',color:'var(--text3)'};}});
   const best=results.reduce((b,r)=>r.mapeV<b.mapeV?r:b,results[0]);
 
   document.getElementById('comparison-body').innerHTML=results.map(r=>{
-    const aicV=aic(data.length,(r.rmseV||0)*(r.rmseV||0),r.k);
     const isWinner=r.name===best.name;
     return `<tr ${isWinner?'class="winner"':''}>
       <td style="font-family:var(--font-mono);color:${r.color}">${r.name}${isWinner?' ★':''}</td>
       <td class="${isWinner?'best':''}">${(r.mapeV||0).toFixed(2)}%</td>
       <td>${Math.round(r.maeV||0).toLocaleString()}</td>
       <td>${Math.round(r.rmseV||0).toLocaleString()}</td>
-      <td>${aicV.toFixed(1)}</td>
       <td style="color:var(--teal);font-family:var(--font-mono)">${r.forecast&&r.forecast[0]?(r.forecast[0]).toLocaleString():'—'}</td>
       <td style="color:var(--text2);font-size:11px">${r.bestFor}</td>
       <td>${isWinner?'<span class="badge b-teal">BEST FIT</span>':'<span class="badge b-gray">—</span>'}</td>
     </tr>`;
   }).join('');
 
-  // Overlay chart
   const svg=document.getElementById('compare-chart');
   const W=600,H=160,pad={t:10,r:10,b:25,l:40};
-  const nAct=Math.min(data.length,24);
+  const nAct=Math.min(data.length,18);
   const actData=data.slice(-nAct);
-  const allVals=[...actData,...results.flatMap(r=>(r.forecast||[]).slice(0,8))].filter(v=>v&&!isNaN(v));
+  const allVals=[...actData,...results.flatMap(r=>(r.forecast||[]).slice(0,6))].filter(v=>v&&!isNaN(v));
   if(!allVals.length){svg.innerHTML='';return;}
   const minV=Math.min(...allVals)*0.85;
   const maxV=Math.max(...allVals)*1.1;
   const range=maxV-minV||1;
-  const totalPts=nAct+8;
+  const totalPts=nAct+6;
   const sx=(i)=>pad.l+(i/Math.max(1,totalPts-1))*(W-pad.l-pad.r);
   const sy=(v)=>H-pad.b-((v-minV)/range)*(H-pad.t-pad.b);
   const actPath=actData.map((v,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(v)}`).join(' ');
   const fcPaths=results.map(r=>{
     if(!r.forecast||!r.forecast[0]) return '';
     const startX=sx(nAct-1),startY=sy(actData[nAct-1]);
-    const path=r.forecast.slice(0,8).map((v,i)=>`L ${sx(nAct+i)} ${sy(v)}`).join(' ');
+    const path=r.forecast.slice(0,6).map((v,i)=>`L ${sx(nAct+i)} ${sy(v)}`).join(' ');
     return `<path d="M ${startX} ${startY} ${path}" stroke="${r.color}" stroke-width="1.5" fill="none" stroke-dasharray="4,2" opacity="0.8"/>`;
   }).join('');
   svg.innerHTML=`
@@ -1544,8 +1340,356 @@ function runComparison(){
 }
 
 /* ════════════════════════════════════════════════════
+   NPI & LIFECYCLE: Bass Diffusion + Analogy + PLC routing
+════════════════════════════════════════════════════ */
+
+// Bass Diffusion: cumulative adoption F(t), new adopters f(t) per period
+// p = coefficient of innovation, q = coefficient of imitation, M = market potential (ceiling)
+function bassDiffusion(p,q,M,periods){
+  const adoption=[];
+  let cumulative=0;
+  for(let t=1;t<=periods;t++){
+    const Ft_1=cumulative/M;
+    const newAdopters=M*(p+q*Ft_1)*(1-Ft_1);
+    cumulative+=newAdopters;
+    adoption.push(Math.max(0,Math.round(newAdopters)));
+  }
+  return adoption;
+}
+
+// Fit Bass parameters loosely from a short actual history using a simple
+// grid search — good enough for early-launch planning guidance.
+function fitBassFromHistory(history,M){
+  let best={p:0.03,q:0.38,err:Infinity};
+  if(!history.length) return best;
+  for(let p=0.005;p<=0.1;p+=0.005){
+    for(let q=0.1;q<=0.6;q+=0.02){
+      const sim=bassDiffusion(p,q,M,history.length);
+      const err=sim.reduce((s,v,i)=>s+Math.pow(v-history[i],2),0);
+      if(err<best.err) best={p,q,err};
+    }
+  }
+  return best;
+}
+
+function analogyForecast(refHistory,scaleFactor,periods){
+  const slice=refHistory.slice(0,periods);
+  return slice.map(v=>Math.max(1,Math.round(v*scaleFactor)));
+}
+
+function plcStageOf(sku){return sku.plc||'Mature';}
+
+function renderNPITab(){
+  renderPLCRail();
+  renderPLCSkuList();
+  if(selectedNPISku) renderNPIDetail(selectedNPISku);
+}
+
+function renderPLCRail(){
+  const stages=['Phase-In','Growth','Mature','Phase-Out'];
+  const counts=stages.map(s=>state.skuMaster.filter(sku=>plcStageOf(sku)===s).length);
+  document.getElementById('plc-rail').innerHTML=stages.map((s,i)=>`
+    <div class="plc-stage ${s===selectedPLCStage?'active':''}" onclick="setPLCStage('${s}')">
+      <div class="plc-stage-name" style="color:${plcColor(s)}">${s}</div>
+      <div class="plc-stage-count">${counts[i]}</div>
+    </div>`).join('');
+}
+function plcColor(stage){
+  return {'Phase-In':'var(--pink)','Growth':'var(--teal)','Mature':'var(--blue)','Phase-Out':'var(--text3)'}[stage]||'var(--text2)';
+}
+function setPLCStage(stage){
+  selectedPLCStage=stage;
+  selectedNPISku=null;
+  renderPLCRail();
+  renderPLCSkuList();
+  document.getElementById('npi-detail-title').textContent='Select a SKU';
+  document.getElementById('npi-detail-body').innerHTML='<div class="empty-state"><div class="empty-state-icon">🚀</div>Select a SKU on the left to see its lifecycle forecast</div>';
+}
+function renderPLCSkuList(){
+  const list=state.skuMaster.filter(s=>plcStageOf(s)===selectedPLCStage);
+  const el=document.getElementById('plc-sku-list');
+  if(!list.length){el.innerHTML='<div class="empty-state">No SKUs in this stage</div>';return;}
+  el.innerHTML=list.map(s=>`
+    <div class="plc-sku-row ${selectedNPISku===s.sku?'selected':''}" onclick="selectNPISku('${s.sku}')">
+      <div class="plc-sku-main"><span class="badge b-gray">${s.sku}</span><span class="plc-sku-name">${s.name}</span></div>
+      <span class="badge ${marketBadge(s.market)}">${s.market}</span>
+    </div>`).join('');
+}
+function marketBadge(m){return {'EMEA':'b-blue','APAC':'b-teal','LATAM':'b-amber','North America':'b-purple','MEA':'b-gray'}[m]||'b-gray';}
+
+function selectNPISku(sku){
+  selectedNPISku=sku;
+  renderPLCSkuList();
+  renderNPIDetail(sku);
+}
+
+function renderNPIDetail(skuCode){
+  const sku=state.skuMaster.find(s=>s.sku===skuCode);
+  if(!sku) return;
+  document.getElementById('npi-detail-title').innerHTML=`${sku.name} <span class="badge b-gray">${sku.sku}</span>`;
+  const hist=(state.demandHistory[sku.sku]||[]).map(h=>h.value);
+  const body=document.getElementById('npi-detail-body');
+
+  if(sku.plc==='Phase-In'){
+    const M=Math.max(500,mean(hist)*30||2000);
+    const fit=fitBassFromHistory(hist,M);
+    const projection=bassDiffusion(fit.p,fit.q,M,12);
+    let analogyNote='';
+    let analogySeries=null;
+    if(sku.analogy && state.demandHistory[sku.analogy]){
+      const refHist=state.demandHistory[sku.analogy].map(h=>h.value);
+      const refSku=state.skuMaster.find(s=>s.sku===sku.analogy);
+      const scaleFactor=sku.cost&&refSku&&refSku.cost?(sku.cost/refSku.cost):1;
+      analogySeries=analogyForecast(refHist,Math.max(0.3,Math.min(2,1/scaleFactor)),12);
+      analogyNote=`<div class="method-note"><span class="mn-icon">ℹ</span><span>Analogy model: scaling <strong>${sku.analogy}</strong>'s early launch curve as a sanity check against the Bass projection.</span></div>`;
+    }
+    renderBassChart('npi-chart-svg',hist,projection,analogySeries);
+    body.innerHTML=`
+      <div class="badge b-pink" style="margin-bottom:.75rem">Phase-In — Bass Diffusion Model</div>
+      <div class="method-note"><span class="mn-icon">ℹ</span><span>Too little history for statistical models. Bass Diffusion models the adoption curve using an innovation coefficient (p) and an imitation coefficient (q) — standard for forecasting a brand-new launch.</span></div>
+      ${analogyNote}
+      <svg id="npi-chart-svg" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="stat-result-grid" style="margin-top:1rem">
+        <div class="stat-result"><div class="sr-label">Innovation (p)</div><div class="sr-val">${fit.p.toFixed(3)}</div><div class="sr-sub">early adopters</div></div>
+        <div class="stat-result"><div class="sr-label">Imitation (q)</div><div class="sr-val">${fit.q.toFixed(3)}</div><div class="sr-sub">word-of-mouth</div></div>
+        <div class="stat-result"><div class="sr-label">Months to peak</div><div class="sr-val">${projection.indexOf(Math.max(...projection))+1}</div><div class="sr-sub">adoption peak</div></div>
+      </div>
+      <div class="method-note" style="margin-top:1rem"><span class="mn-icon">→</span><span><strong>Transition plan:</strong> once ${sku.sku} has 6+ months of actuals, switch it to Statistical Forecasting (Growth stage) — Bass Diffusion is only reliable for the first few months post-launch.</span></div>
+    `;
+    setTimeout(()=>renderBassChart('npi-chart-svg',hist,projection,analogySeries),0);
+  } else if(sku.plc==='Phase-Out'){
+    const decline=hist.length>=3?((hist[hist.length-1]-hist[0])/Math.max(1,hist[0])/hist.length*100):0;
+    const lastVal=hist[hist.length-1]||0;
+    const windDown=Array.from({length:6},(_,i)=>Math.max(0,Math.round(lastVal*Math.pow(1+decline/100,i+1))));
+    renderBassChart('npi-chart-svg',hist,windDown,null);
+    body.innerHTML=`
+      <div class="badge b-gray" style="margin-bottom:.75rem">Phase-Out — Wind-Down Forecast</div>
+      <div class="method-note"><span class="mn-icon">ℹ</span><span>Statistical models will overstate future demand for an item being discontinued. The wind-down forecast extends the observed decline rate instead, so replenishment doesn't overshoot into stranded stock.</span></div>
+      <svg id="npi-chart-svg" class="stat-chart" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="stat-result-grid" style="margin-top:1rem">
+        <div class="stat-result"><div class="sr-label">Monthly decline</div><div class="sr-val">${decline.toFixed(1)}%</div><div class="sr-sub">trend rate</div></div>
+        <div class="stat-result"><div class="sr-label">Months to near-zero</div><div class="sr-val">${windDown.findIndex(v=>v<5)>=0?windDown.findIndex(v=>v<5)+1:'6+'}</div><div class="sr-sub">at current rate</div></div>
+        <div class="stat-result"><div class="sr-label">Current stock</div><div class="sr-val">${(state.inventory.find(i=>i.sku===sku.sku)||{}).stock?.toLocaleString()||'—'}</div><div class="sr-sub">units on hand</div></div>
+      </div>
+      <div class="method-note" style="margin-top:1rem"><span class="mn-icon">⚠</span><span><strong>Action:</strong> stop replenishment orders and consider a markdown plan if current stock exceeds the 6-month wind-down forecast total.</span></div>
+    `;
+    setTimeout(()=>renderBassChart('npi-chart-svg',hist,windDown,null),0);
+  } else {
+    body.innerHTML=`
+      <div class="badge ${sku.plc==='Growth'?'b-teal':'b-blue'}" style="margin-bottom:.75rem">${sku.plc} — Best-Fit: Statistical Forecasting</div>
+      <div class="method-note"><span class="mn-icon">ℹ</span><span>${sku.sku} has enough history for the statistical models (Moving Average / Exponential Smoothing / Holt-Winters) to be reliable. Best-fit routing sends ${sku.plc} stage SKUs to the Statistical Forecast tab automatically.</span></div>
+      <button class="btn-primary" onclick="switchTab('statistical');setTimeout(()=>selectSKUInStatTab('${sku.sku}'),50)">Open in Statistical Forecast →</button>
+    `;
+  }
+}
+function selectSKUInStatTab(skuCode){
+  const idx=state.skuMaster.findIndex(s=>s.sku===skuCode);
+  if(idx<0) return;
+  const sel=document.getElementById('stat-sku');
+  if([...sel.options].some(o=>o.value===String(idx))){
+    sel.value=String(idx);
+    onSKUChange();
+  }
+}
+
+function renderBassChart(svgId,actual,projection,analogySeries){
+  const svg=document.getElementById(svgId);
+  if(!svg) return;
+  const W=400,H=140,pad={t:10,r:10,b:25,l:40};
+  const allVals=[...actual,...projection,...(analogySeries||[])].filter(v=>v!=null&&!isNaN(v));
+  if(!allVals.length){svg.innerHTML='';return;}
+  const minV=0;
+  const maxV=Math.max(...allVals)*1.15;
+  const range=maxV-minV||1;
+  const nAct=actual.length;
+  const totalPts=nAct+projection.length;
+  const sx=(i)=>pad.l+(i/Math.max(1,totalPts-1))*(W-pad.l-pad.r);
+  const sy=(v)=>H-pad.b-((v-minV)/range)*(H-pad.t-pad.b);
+  const gridLines=Array.from({length:4},(_,i)=>{
+    const v=minV+(maxV-minV)*(i/3);
+    const y=sy(v);
+    return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" class="grid-line"/><text x="${pad.l-4}" y="${y+3}" class="axis-label" text-anchor="end">${Math.round(v)}</text>`;
+  }).join('');
+  const actPath=nAct?actual.map((v,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(v)}`).join(' '):'';
+  const startX=nAct?sx(nAct-1):sx(0);
+  const startY=nAct?sy(actual[nAct-1]):sy(projection[0]);
+  const projPath=`M ${startX} ${startY} `+projection.map((v,i)=>`L ${sx(nAct+i)} ${sy(v)}`).join(' ');
+  let analogyPath='';
+  if(analogySeries&&analogySeries.length){
+    analogyPath=`M ${startX} ${startY} `+analogySeries.map((v,i)=>`L ${sx(nAct+i)} ${sy(v)}`).join(' ');
+  }
+  svg.innerHTML=`
+    ${gridLines}
+    ${actPath?`<path d="${actPath}" stroke="#4F8EF7" stroke-width="2" fill="none"/>`:''}
+    ${actual.map((v,i)=>`<circle cx="${sx(i)}" cy="${sy(v)}" r="2" fill="#4F8EF7"/>`).join('')}
+    <path d="${projPath}" stroke="#F472B6" stroke-width="2" fill="none" stroke-dasharray="5,3"/>
+    ${analogyPath?`<path d="${analogyPath}" stroke="#A78BFA" stroke-width="1.5" fill="none" stroke-dasharray="2,3" opacity="0.8"/>`:''}
+    <text x="${pad.l}" y="${H-5}" class="axis-label">${nAct?'Actual':'Launch'}</text>
+    <text x="${sx(nAct)+2}" y="${H-5}" class="axis-label" fill="#F472B6">► Projected</text>
+  `;
+}
+
+/* ════════════════════════════════════════════════════
+   HIERARCHY VIEW
+════════════════════════════════════════════════════ */
+function setHierarchyMode(mode){
+  hierarchyMode=mode;
+  document.getElementById('hier-mode-top').classList.toggle('active',mode==='top');
+  document.getElementById('hier-mode-bottom').classList.toggle('active',mode==='bottom');
+  document.getElementById('hier-mode-caption').textContent=mode==='top'
+    ? 'Top-down: start from total company demand and see how it splits across regions, markets, and SKUs.'
+    : 'Bottom-up: start from individual SKU forecasts and see how they aggregate up into market, region, and company totals.';
+  renderHierarchy();
+}
+
+function weeklyToMonthly(w){return Math.round(w*4.33);}
+
+function renderHierarchy(){
+  const tree=document.getElementById('hier-tree');
+  if(!state.skuMaster.length){
+    tree.innerHTML='<div class="empty-state"><div class="empty-state-icon">🗂️</div>Load data to see the hierarchy</div>';
+    return;
+  }
+  const regions={};
+  state.hierarchy.forEach(h=>{
+    if(!regions[h.region]) regions[h.region]=new Set();
+    regions[h.region].add(h.market);
+  });
+  if(!Object.keys(regions).length){
+    [...new Set(state.skuMaster.map(s=>s.market))].forEach(m=>{regions[m]=new Set([m]);});
+  }
+
+  function skusFor(market){return state.skuMaster.filter(s=>s.market===market);}
+  function monthlyDemandFor(sku){
+    const hist=state.demandHistory[sku.sku]||[];
+    if(hist.length) return hist[hist.length-1].value;
+    const inv=state.inventory.find(i=>i.sku===sku.sku);
+    return inv?weeklyToMonthly(inv.weekly||0):0;
+  }
+
+  if(hierarchyMode==='top'){
+    renderHierarchyTopDown(tree,regions,skusFor,monthlyDemandFor);
+  } else {
+    renderHierarchyBottomUp(tree,regions,skusFor,monthlyDemandFor);
+  }
+}
+
+// TOP-DOWN: Company is the anchor. Each level's % is expressed as a share
+// of the level directly above it — "how does the aggregate split down".
+function renderHierarchyTopDown(tree,regions,skusFor,monthlyDemandFor){
+  let companyTotal=0;
+  const regionBlocks=Object.entries(regions).map(([region,marketsSet])=>{
+    const markets=[...marketsSet];
+    let regionTotal=0;
+    const marketBlocks=markets.map(market=>{
+      const skus=skusFor(market);
+      const marketTotal=skus.reduce((s,sku)=>s+monthlyDemandFor(sku),0);
+      regionTotal+=marketTotal;
+      const skuRows=skus.map(sku=>{
+        const val=monthlyDemandFor(sku);
+        const pct=marketTotal?Math.round(val/marketTotal*100):0;
+        return `<div class="hier-node hier-level-sku">
+          <span class="hier-toggle"></span>
+          <span class="hier-label">${sku.sku} — ${sku.name} <span class="badge ${plcBadgeClass(sku.plc)}" style="margin-left:6px">${sku.plc}</span></span>
+          <span class="hier-meta"><span>${val.toLocaleString()} u/mo</span><span>${pct}% of market</span></span>
+        </div>`;
+      }).join('');
+      return {market,marketTotal,skuRows};
+    });
+    companyTotal+=regionTotal;
+    return {region,regionTotal,marketBlocks};
+  });
+
+  const regionHtml=regionBlocks.map(({region,regionTotal,marketBlocks})=>{
+    const regionPct=companyTotal?Math.round(regionTotal/companyTotal*100):0;
+    const marketHtml=marketBlocks.map(({market,marketTotal,skuRows})=>{
+      const marketPct=regionTotal?Math.round(marketTotal/regionTotal*100):0;
+      return `<div class="hier-node hier-level-market" onclick="toggleHierNode(this)">
+          <span class="hier-toggle">▶</span>
+          <span class="hier-label">${market}</span>
+          <span class="hier-meta"><span>${marketTotal.toLocaleString()} u/mo</span><span>${marketPct}% of region</span></span>
+        </div>
+        <div class="hier-children">${skuRows||'<div class="empty-state" style="padding:.5rem">No SKUs mapped to this market</div>'}</div>`;
+    }).join('');
+    return `<div class="hier-node hier-level-region" onclick="toggleHierNode(this)">
+        <span class="hier-toggle">▶</span>
+        <span class="hier-label">${region}</span>
+        <span class="hier-meta"><span>${regionTotal.toLocaleString()} u/mo</span><span>${regionPct}% of company</span></span>
+      </div>
+      <div class="hier-children">${marketHtml}</div>`;
+  }).join('');
+
+  tree.innerHTML=`
+    <div class="hier-node hier-level-company" onclick="toggleHierNode(this)">
+      <span class="hier-toggle">▶</span>
+      <span class="hier-label">Company (All Regions)</span>
+      <span class="hier-meta"><span>${companyTotal.toLocaleString()} units/month</span><span>100% — starting point</span></span>
+    </div>
+    <div class="hier-children">${regionHtml}</div>
+  `;
+  const companyNode=tree.querySelector('.hier-level-company');
+  if(companyNode) toggleHierNode(companyNode);
+}
+
+// BOTTOM-UP: SKUs are the anchor and are shown expanded by default, grouped
+// by market. Each market and region total is presented as "the sum of" its
+// children rather than "the split of" a parent — reflecting that the SKU
+// forecasts are the source of truth being aggregated upward.
+function renderHierarchyBottomUp(tree,regions,skusFor,monthlyDemandFor){
+  let companyTotal=0;
+  const marketSummaries=[];
+  Object.entries(regions).forEach(([region,marketsSet])=>{
+    [...marketsSet].forEach(market=>{
+      const skus=skusFor(market);
+      if(!skus.length) return;
+      const marketTotal=skus.reduce((s,sku)=>s+monthlyDemandFor(sku),0);
+      companyTotal+=marketTotal;
+      marketSummaries.push({region,market,marketTotal,skus});
+    });
+  });
+
+  const marketHtml=marketSummaries.map(({region,market,marketTotal,skus})=>{
+    const skuRows=skus.map(sku=>{
+      const val=monthlyDemandFor(sku);
+      const pct=marketTotal?Math.round(val/marketTotal*100):0;
+      return `<div class="hier-node hier-level-sku">
+        <span class="hier-toggle"></span>
+        <span class="hier-label">${sku.sku} — ${sku.name} <span class="badge ${plcBadgeClass(sku.plc)}" style="margin-left:6px">${sku.plc}</span></span>
+        <span class="hier-meta"><span>${val.toLocaleString()} u/mo</span><span>contributes ${pct}%</span></span>
+      </div>`;
+    }).join('');
+    return `<div class="hier-node hier-level-market" onclick="toggleHierNode(this)">
+        <span class="hier-toggle open">▶</span>
+        <span class="hier-label">${market} <span style="color:var(--text3);font-weight:400">— sum of ${skus.length} SKU${skus.length===1?'':'s'} (${region})</span></span>
+        <span class="hier-meta"><span>${marketTotal.toLocaleString()} u/mo</span></span>
+      </div>
+      <div class="hier-children open">${skuRows}</div>`;
+  }).join('');
+
+  tree.innerHTML=`
+    <div class="hier-node hier-level-company">
+      <span class="hier-toggle" style="visibility:hidden">▶</span>
+      <span class="hier-label">Company total — sum of all markets below</span>
+      <span class="hier-meta"><span>${companyTotal.toLocaleString()} units/month</span></span>
+    </div>
+    ${marketHtml}
+  `;
+}
+
+function plcBadgeClass(plc){return {'Phase-In':'b-pink','Growth':'b-teal','Mature':'b-blue','Phase-Out':'b-gray'}[plc]||'b-gray';}
+
+function toggleHierNode(el){
+  const toggle=el.querySelector('.hier-toggle');
+  const children=el.nextElementSibling;
+  if(!children||!children.classList.contains('hier-children')) return;
+  const isOpen=children.classList.contains('open');
+  children.classList.toggle('open',!isOpen);
+  if(toggle) toggle.classList.toggle('open',!isOpen);
+  el.classList.toggle('expanded',!isOpen);
+}
+
+/* ════════════════════════════════════════════════════
    EOQ & SAFETY STOCK
-   FIX #7: All calculations guarded against div-by-zero / NaN
 ════════════════════════════════════════════════════ */
 function safeNum(id,fallback){
   const v=parseFloat(document.getElementById(id).value);
@@ -1563,7 +1707,6 @@ function calcEOQ(){
   const EOQ=Math.max(1,Math.round(Math.sqrt(2*D*S/H)));
   const orderCost=Math.round((D/EOQ)*S);
   const holdCost=Math.round((EOQ/2)*H);
-  const totalCost=Math.round(orderCost+holdCost+D*C);
   const ordersPerYear=Math.round(D/EOQ*10)/10;
   const cycleDays=Math.round(EOQ/D*365);
   const dailyD=D/365;
@@ -1594,9 +1737,6 @@ function calcSS(){
   const ROP=Math.max(0,Math.round(dBar*LT+SS));
   const OUL=Math.max(0,Math.round(dBar*(LT+RP)+SS));
   const cvVal=dBar>0?(sigmaD/dBar*100).toFixed(1):'0.0';
-  // FIX #4: stockout prob based on Z → Φ(-z) not an exponential heuristic
-  const slZ=Z;
-  const stockoutP=Math.max(1,Math.min(99,Math.round((1-normalCDF(slZ))*100)));
 
   document.getElementById('ss-main-result').innerHTML=`
     <div class="eoq-label">Safety Stock Required</div>
@@ -1610,6 +1750,23 @@ function calcSS(){
     </div>`;
 }
 
+function statusFromDays(days){
+  if(days>60) return 'Excess';
+  if(days>30) return 'Healthy';
+  if(days>=7) return 'Low';
+  return 'Critical';
+}
+function statusStyle(s){
+  const m={Critical:{bc:'b-red',label:'Critical'},Low:{bc:'b-amber',label:'Low'},Healthy:{bc:'b-green',label:'Healthy'},Excess:{bc:'b-blue',label:'Excess'}};
+  return m[s]||{bc:'b-gray',label:s||'Unknown'};
+}
+function barColor(s){return s==='Critical'?'var(--red)':s==='Low'?'var(--amber)':s==='Excess'?'var(--blue)':'var(--teal)';}
+
+function daysCoverFor(inv){
+  if(!inv.weekly) return 0;
+  return Math.round(inv.stock/(inv.weekly/7));
+}
+
 function renderBatchEOQ(){
   const body=document.getElementById('batch-eoq-table');
   if(!state.inventory.length){
@@ -1618,15 +1775,16 @@ function renderBatchEOQ(){
   }
   body.innerHTML=state.inventory.map(i=>{
     const weekly=Math.max(1,i.weekly||50);
+    const days=daysCoverFor(i);
+    const status=statusFromDays(days);
     const annual=weekly*52;
     const EOQ=Math.max(1,Math.round(Math.sqrt(2*annual*200/6)));
     const sigmaD=weekly*0.2;
-    const SS=Math.max(0,Math.round(1.65*Math.sqrt(Math.max(1,i.days)||14)*sigmaD));
-    const ROP=Math.max(0,Math.round(weekly/7*(i.days||14)+SS));
+    const SS=Math.max(0,Math.round(1.65*Math.sqrt(Math.max(1,days)||14)*sigmaD));
+    const ROP=Math.max(0,Math.round(weekly/7*(days||14)+SS));
     const cvVal=(sigmaD/weekly*100).toFixed(1);
-    // FIX #4: proper stockout probability
-    const stockoutP=stockoutProbability(i.days||14, weekly);
-    const {bc,label}=statusStyle(i.status);
+    const stockoutP=stockoutProbability(days||14, weekly);
+    const {bc,label}=statusStyle(status);
     const cvBadge=parseFloat(cvVal)>30?'b-red':parseFloat(cvVal)>20?'b-amber':parseFloat(cvVal)>10?'b-blue':'b-green';
     return `<tr>
       <td class="mono">${i.sku}</td>
@@ -1644,7 +1802,7 @@ function renderBatchEOQ(){
 }
 
 /* ════════════════════════════════════════════════════
-   EXCEL UPLOAD
+   EXCEL UPLOAD — long-format Demand History parsing
 ════════════════════════════════════════════════════ */
 function handleFile(e){
   const file=e.target.files[0];
@@ -1653,68 +1811,113 @@ function handleFile(e){
   reader.onload=ev=>{
     try{
       const wb=XLSX.read(ev.target.result,{type:'binary'});
-      const parsed={inventory:[],forecast:[],pos:[],suppliers:[]};
+      const parsed={skuMaster:[],inventory:[],pos:[],suppliers:[],hierarchy:[],demandHistory:{}};
+
       wb.SheetNames.forEach(name=>{
         const ws=wb.Sheets[name];
         const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
         const nl=name.toLowerCase();
-        if(nl.includes('inventory')){
+        if(nl.includes('sku') && nl.includes('master')){
+          parsed.skuMaster=rows.map(r=>({
+            sku:String(r['SKU']||'').trim(),
+            name:r['Product Name']||'',
+            category:r['Category']||'',
+            market:r['Market']||'',
+            plc:r['PLC Stage']||'Mature',
+            launch:r['Launch Date']||'',
+            analogy:String(r['Analogy Reference SKU']||'').trim(),
+            cost:+r['Unit Cost ($)']||0,
+            status:r['Status']||'Active'
+          })).filter(r=>r.sku);
+        } else if(nl.includes('demand') && nl.includes('history')){
+          rows.forEach(r=>{
+            const sku=String(r['SKU']||'').trim();
+            if(!sku) return;
+            if(!parsed.demandHistory[sku]) parsed.demandHistory[sku]=[];
+            const val=r['Demand (Units)'];
+            if(val===''||val==null) return; // leave genuinely missing blank, don't treat as 0
+            parsed.demandHistory[sku].push({period:r['Period (YYYY-MM)']||'',value:+val,note:r['Notes (optional - e.g. promo, stockout)']||r['Notes']||''});
+          });
+        } else if(nl.includes('inventory')){
           parsed.inventory=rows.map(r=>({
-            sku:r['SKU']||r['sku']||'',name:r['Product Name']||r['Product']||'',
-            market:r['Market']||r['market']||'',stock:+r['Stock (Units)']||+r['Stock']||0,
-            days:+r['Days Cover']||+r['Days']||0,rop:+r['Reorder Point']||+r['ROP']||0,
-            weekly:+r['Weekly Demand']||+r['weekly']||0,status:r['Status']||r['status']||'Healthy'
-          }));
-        } else if(nl.includes('forecast')||nl.includes('demand')){
-          parsed.forecast=rows.map(r=>({
-            market:r['Market']||r['market']||'',
-            apr:+r['Apr']||0,may:+r['May']||0,jun:+r['Jun']||0,
-            jul:+r['Jul']||0,aug:+r['Aug']||0,sep:+r['Sep']||0
-          })).filter(r=>r.market&&r.market!=='TOTAL');
-        } else if(nl.includes('purchase')||nl.includes('po')){
+            sku:String(r['SKU']||'').trim(),
+            name:r['Product Name']||r['Product']||'',
+            market:r['Market']||'',
+            stock:+r['Stock on Hand (units)']||+r['Stock']||0,
+            weekly:+r['Weekly Demand (avg units)']||+r['Weekly Demand']||0,
+            rop:+r['Reorder Point']||0
+          })).filter(r=>r.sku);
+        } else if(nl.includes('hierarchy')){
+          parsed.hierarchy=rows.map(r=>({region:r['Region']||'',market:r['Market']||'',country:r['Country (optional)']||''})).filter(r=>r.region&&r.market);
+        } else if(nl.includes('purchase')||nl==='pos'||nl.includes('po')){
           parsed.pos=rows.map(r=>({
-            po:r['PO Number']||r['PO']||'',supplier:r['Supplier']||'',
+            po:r['PO Number']||'',supplier:r['Supplier ID']||r['Supplier']||'',
             sku:r['SKU']||'',product:r['Product']||'',units:+r['Units']||0,
-            ordered:r['Order Date']||r['Ordered']||'',eta:r['ETA']||'',status:r['Status']||'Pending'
-          }));
+            ordered:r['Order Date']||'',eta:r['ETA']||'',status:r['Status']||'Pending'
+          })).filter(r=>r.po);
         } else if(nl.includes('supplier')){
           parsed.suppliers=rows.map(r=>({
-            id:r['Supplier ID']||r['Supplier']||'',region:r['Region']||'',
-            otd:+r['OTD %']||+r['OTD']||0,quality:+r['Quality %']||+r['Quality']||0,
-            lead:+r['Lead Time (days)']||+r['Lead Time']||0,status:r['Status']||''
-          }));
+            id:r['Supplier ID']||'',region:r['Region']||'',
+            otd:+r['OTD %']||0,quality:+r['Quality %']||0,
+            lead:+r['Avg Lead Time (days)']||0,status:r['Status']||''
+          })).filter(r=>r.id);
         }
       });
-      if(!parsed.inventory.length) parsed.inventory=[...DEMO_INV];
-      if(!parsed.forecast.length) parsed.forecast=[...DEMO_FC];
-      if(!parsed.pos.length) parsed.pos=[...DEMO_POS];
-      if(!parsed.suppliers.length) parsed.suppliers=[...DEMO_SUPS];
+
+      // fill product names in demand history's parent sku master lookups not required; inventory product names backfilled from sku master
+      if(parsed.skuMaster.length){
+        parsed.inventory.forEach(inv=>{
+          if(!inv.name){
+            const m=parsed.skuMaster.find(s=>s.sku===inv.sku);
+            if(m) inv.name=m.name;
+          }
+        });
+      }
+
+      if(!parsed.skuMaster.length) parsed.skuMaster=JSON.parse(JSON.stringify(DEMO_SKU_MASTER));
+      if(!parsed.inventory.length) parsed.inventory=JSON.parse(JSON.stringify(DEMO_INV));
+      if(!Object.keys(parsed.demandHistory).length){
+        const demandHistory={};
+        demandHistory['SKU-2041']=generateMonthlyHistory(280,24,0.003,0.18,11);
+        parsed.demandHistory=demandHistory;
+      } else {
+        // normalize: sort each SKU's history by period and index it
+        Object.keys(parsed.demandHistory).forEach(sku=>{
+          parsed.demandHistory[sku].sort((a,b)=>String(a.period).localeCompare(String(b.period)));
+        });
+      }
+      if(!parsed.pos.length) parsed.pos=JSON.parse(JSON.stringify(DEMO_POS));
+      if(!parsed.suppliers.length) parsed.suppliers=JSON.parse(JSON.stringify(DEMO_SUPS));
+      if(!parsed.hierarchy.length) parsed.hierarchy=JSON.parse(JSON.stringify(DEMO_HIERARCHY));
+
       state=parsed;
       document.getElementById('data-status').textContent='✓ EXCEL';
       document.getElementById('data-status').className='pill pill-green';
-      skuModelParams={};lastSKUIdx=0;
+      skuModelParams={};lastSKUIdx=0;selectedNPISku=null;
       populateSKUSelect();
       renderAll();
-    }catch(err){alert('Could not parse file. Please use the provided Excel template.');}
+    }catch(err){alert('Could not parse file. Please use the provided Excel master template.');console.error(err);}
   };
   reader.readAsBinaryString(file);
 }
 
 /* ════════════════════════════════════════════════════
-   FIX #9: CSV EXPORT
+   CSV EXPORT
 ════════════════════════════════════════════════════ */
 function exportTable(tableId,filename){
   const tbl=document.getElementById(tableId);
   if(!tbl){alert('No data to export.');return;}
   const rows=[];
-  const thead=tbl.querySelector('thead');
-  if(thead){
-    const headers=[...thead.querySelectorAll('th')].map(th=>th.textContent.trim());
+  const thead=tbl.closest('table')?tbl.closest('table').querySelector('thead'):tbl.parentElement.querySelector('thead');
+  const tableEl=document.getElementById(tableId).tagName==='TABLE'?document.getElementById(tableId):document.getElementById(tableId).closest('table');
+  const theadEl=tableEl?tableEl.querySelector('thead'):null;
+  if(theadEl){
+    const headers=[...theadEl.querySelectorAll('th')].map(th=>th.textContent.trim());
     rows.push(headers.join(','));
   }
-  const tbody=tbl.querySelector('tbody');
-  if(tbody){
-    [...tbody.querySelectorAll('tr')].forEach(tr=>{
+  const tbodyEl=document.getElementById(tableId).tagName==='TABLE'?document.getElementById(tableId).querySelector('tbody'):document.getElementById(tableId);
+  if(tbodyEl){
+    [...tbodyEl.querySelectorAll('tr')].forEach(tr=>{
       const cells=[...tr.querySelectorAll('td')].map(td=>{
         const text=td.textContent.trim().replace(/,/g,' ');
         return `"${text}"`;
@@ -1724,12 +1927,40 @@ function exportTable(tableId,filename){
   }
   if(rows.length<=1){alert('No data to export.');return;}
   const csv=rows.join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`${filename}_${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  try{
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`${filename}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }catch(err){
+    console.error('CSV export failed:',err);
+    alert('Could not generate the download in this browser. Please try a different browser.');
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   DATA QUALITY / OUTLIER DETECTION
+════════════════════════════════════════════════════ */
+function detectOutliers(){
+  const flags=[];
+  Object.entries(state.demandHistory).forEach(([sku,hist])=>{
+    const vals=hist.map(h=>h.value).filter(v=>v!=null&&!isNaN(v));
+    if(vals.length<4) return;
+    const m=mean(vals);
+    const sd=stdDev(vals);
+    if(sd<=0) return;
+    hist.forEach(h=>{
+      if(h.value==null||isNaN(h.value)) return;
+      const z=(h.value-m)/sd;
+      if(Math.abs(z)>2.2){
+        const skuMeta=state.skuMaster.find(s=>s.sku===sku);
+        flags.push({sku,product:skuMeta?skuMeta.name:sku,period:h.period,value:h.value,z:z.toFixed(1),note:h.note||''});
+      }
+    });
+  });
+  return flags;
 }
 
 /* ════════════════════════════════════════════════════
@@ -1742,24 +1973,13 @@ function renderAll(){
   renderPOs();
   renderTimeline();
   renderRisks();
-  renderFcExcel();
-  runForecast();
   renderBatchEOQ();
   calcEOQ();
   calcSS();
+  renderNPITab();
+  renderHierarchy();
 }
 
-function statusStyle(s){
-  const m={Critical:{bc:'b-red',label:'Critical'},Low:{bc:'b-amber',label:'Low'},Healthy:{bc:'b-green',label:'Healthy'},Excess:{bc:'b-blue',label:'Excess'}};
-  return m[s]||{bc:'b-gray',label:s||'Unknown'};
-}
-function barColor(s){return s==='Critical'?'var(--red)':s==='Low'?'var(--amber)':s==='Excess'?'var(--blue)':'var(--teal)';}
-function healthStatusFromCoverage(days){
-  if(days>60) return 'Excess';
-  if(days>30) return 'Healthy';
-  if(days>=7) return 'Low';
-  return 'Critical';
-}
 function healthRank(status){
   const ranks={Critical:0,Low:1,Healthy:2,Excess:3};
   return ranks[status]??0;
@@ -1776,64 +1996,22 @@ function setHealthProjectionPeriod(months){
   });
   renderDashboard();
 }
-function monthIdxFromText(txt){
-  return MONTH_KEYS.indexOf((txt||'').slice(0,3).toLowerCase());
-}
-function forecastBaseMonth(){
-  const row=state.forecast[0]||{};
-  const firstKey=MONTH_KEYS.find(k=>typeof row[k]==='number');
-  return firstKey||MONTH_KEYS[new Date().getMonth()];
-}
 function etaOffsetMonths(eta){
-  const base=monthIdxFromText(forecastBaseMonth());
-  const raw=(eta||'').trim().split(/\s+/)[0]||'';
-  const idx=monthIdxFromText(raw);
+  const months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const now=new Date();
+  const raw=String(eta||'').trim();
+  const m=raw.match(/[A-Za-z]{3}/);
+  if(!m) return Number.POSITIVE_INFINITY;
+  const idx=months.indexOf(m[0].toLowerCase());
   if(idx<0) return Number.POSITIVE_INFINITY;
-  return idx>=base?idx-base:idx+MONTHS_IN_YEAR-base;
+  const base=now.getMonth();
+  return idx>=base?idx-base:idx+12-base;
 }
-function getProjectionSeries(market,months){
-  const row=state.forecast.find(f=>f.market===market);
-  if(!row){
-    const inv=state.inventory.filter(i=>i.market===market);
-    return new Array(Math.max(1,months)).fill(inv.reduce((s,i)=>s+(i.weekly||0),0)*WEEKS_PER_MONTH);
-  }
-  const keys=MONTH_KEYS.filter(k=>typeof row[k]==='number');
-  const s=keys.map(k=>Math.max(0,row[k]||0));
-  if(months<=s.length) return s.slice(0,months);
-  const deltas=s.slice(1).map((v,i)=>v-s[i]);
-  const avgDelta=deltas.length?deltas.reduce((a,b)=>a+b,0)/deltas.length:0;
-  // Simple linear extension for demo projection horizons beyond imported months.
-  while(s.length<months){
-    s.push(Math.max(0,Math.round(s[s.length-1]+avgDelta)));
-  }
-  return s;
-}
-function marketProjection(market,periodMonths){
-  const invRows=state.inventory.filter(i=>i.market===market);
-  const stockNow=invRows.reduce((s,i)=>s+i.stock,0);
-  const weeklyNow=Math.max(1,invRows.reduce((s,i)=>s+(i.weekly||0),0));
-  const daysNow=stockNow/weeklyNow;
-  const statusNow=healthStatusFromCoverage(daysNow);
-  if(periodMonths===0){
-    return {days:daysNow,stock:stockNow,weekly:weeklyNow,status:statusNow,todayStatus:statusNow,trend:'→',incomingPO:0};
-  }
-  const weeks=Math.round(periodMonths*WEEKS_PER_MONTH);
-  const baselineWeeks=Math.round(BASELINE_PROJECTION_MONTHS*WEEKS_PER_MONTH);
-  const baselineSeries=getProjectionSeries(market,BASELINE_PROJECTION_MONTHS);
-  const periodSeries=getProjectionSeries(market,periodMonths);
-  // Normalize forecast scale to today's weekly usage by comparing baseline and selected horizon trends.
-  const baselineWeekly=Math.max(1,baselineSeries.reduce((s,v)=>s+v,0)/baselineWeeks);
-  const periodWeeklyRaw=Math.max(1,periodSeries.reduce((s,v)=>s+v,0)/weeks);
-  const projectedWeekly=Math.max(1,weeklyNow*(periodWeeklyRaw/baselineWeekly));
-  const incomingPO=state.pos.filter(p=>{
-    // POs are applied to a market when their SKU exists in that market's inventory rows.
-    if(p.sku && !invRows.some(i=>i.sku===p.sku)) return false;
-    return etaOffsetMonths(p.eta)<=periodMonths;
-  }).reduce((s,p)=>s+(p.units||0),0);
-  const projectedStock=stockNow-(weeks*projectedWeekly)+incomingPO;
-  const projectedDays=Math.max(0,projectedStock/Math.max(1,projectedWeekly));
-  const projectedStatus=healthStatusFromCoverage(projectedDays);
-  return {days:projectedDays,stock:projectedStock,weekly:projectedWeekly,status:projectedStatus,todayStatus:statusNow,trend:healthTrendArrow(statusNow,projectedStatus),incomingPO};
+function projectionConfidence(months){
+  if(months===0) return 'Confidence: High · Current data';
+  if(months===3) return 'Confidence: High · Forecast trend + incoming POs';
+  if(months===6) return 'Confidence: Medium · Assumes current supply plan';
+  return 'Confidence: Scenario · Assumes stable trend and PO execution';
 }
 function projectionSummary(statusNow,statusFuture,months){
   if(months===0) return 'Baseline (today)';
@@ -1842,48 +2020,193 @@ function projectionSummary(statusNow,statusFuture,months){
   if(healthRank(statusFuture)<healthRank(statusNow)) return `↘ Degrading by ${months} months`;
   return healthRank(statusFuture)>=healthRank('Healthy') ? `✓ Will remain ${statusFuture}` : `⚠️ Will remain ${statusFuture}`;
 }
-function projectionConfidence(months){
-  if(months===0) return 'Confidence: High · Current data';
-  if(months===3) return 'Confidence: High · Forecast trend + incoming POs';
-  if(months===6) return 'Confidence: Medium · Assumes current supply plan';
-  return 'Confidence: Scenario · Assumes stable trend and PO execution';
+// Core projection simulation, reusable for either a single SKU's inventory
+// row or a whole market's rows summed together. Returns the same shape
+// either way: {days, status, todayStatus, trend, incomingPO}.
+function projectStockFor(invRows,periodMonths,skuFilterForPOs){
+  const stockNow=invRows.reduce((s,i)=>s+i.stock,0);
+  const weeklyNow=Math.max(1,invRows.reduce((s,i)=>s+(i.weekly||0),0));
+  const dailyNow=weeklyNow/7;
+  const daysNow=stockNow/dailyNow;
+  const statusNow=statusFromDays(daysNow);
+  if(periodMonths===0){
+    return {days:daysNow,status:statusNow,todayStatus:statusNow,trend:'→',incomingPO:0};
+  }
+
+  // Demand trend from SKU-level history.
+  const histTrend=invRows.reduce((acc,inv)=>{
+    const hist=(state.demandHistory[inv.sku]||[]).map(h=>h.value);
+    if(hist.length>=2){
+      const delta=(hist[hist.length-1]-hist[0])/Math.max(1,hist.length);
+      acc.push(delta/Math.max(1,mean(hist)));
+    }
+    return acc;
+  },[]);
+  const avgGrowthRate=histTrend.length?mean(histTrend):0;
+  const projectedWeekly=Math.max(1,weeklyNow*(1+avgGrowthRate*periodMonths));
+  const projectedDaily=Math.max(0.01,projectedWeekly/7);
+
+  // This is a leading indicator, not a "what if nobody ever reorders again"
+  // simulation — the baseline assumes normal replenishment discipline
+  // continues: whenever projected stock would fall to the reorder point, a
+  // typical-sized order lands, same as it does today. Risk only shows up
+  // where it should: a confirmed Delayed PO disrupting that cycle, or
+  // demand growth outpacing the normal reorder size.
+  const ropNow=invRows.reduce((s,i)=>s+(i.rop||0),0)||Math.round(weeklyNow*2);
+  const normalOrderSize=Math.max(projectedDaily*30,ropNow);
+  const relevantPOs=state.pos.filter(p=>skuFilterForPOs(p,invRows));
+  const hasDelayedPO=relevantPOs.some(p=>p.status==='Delayed'&&etaOffsetMonths(p.eta)<=periodMonths+1);
+  const incomingPO=relevantPOs.filter(p=>etaOffsetMonths(p.eta)<=periodMonths)
+    .reduce((s,p)=>s+(p.units||0),0);
+
+  // Simulate week by week: deplete by daily demand, and reorder automatically
+  // once stock dips under the reorder point — unless a known delayed PO
+  // means that cycle is genuinely disrupted, in which case we let it run dry
+  // so the dip actually shows up as risk.
+  const weeks=Math.round(periodMonths*52/12);
+  let simStock=stockNow;
+  let minStock=stockNow;
+  for(let w=1;w<=weeks;w++){
+    simStock-=projectedDaily*7;
+    if(simStock<ropNow && !hasDelayedPO) simStock+=normalOrderSize;
+    minStock=Math.min(minStock,simStock);
+  }
+  const endStock=Math.max(0,simStock);
+  const worstStock=Math.max(0,minStock);
+  // If a PO is delayed, surface the worst point reached during the window
+  // (the actual risk) rather than the smoothed end-of-window number.
+  const effectiveStock=hasDelayedPO?worstStock:endStock;
+  const effectiveDays=effectiveStock/projectedDaily;
+  const projectedStatus=statusFromDays(effectiveDays);
+  return {days:effectiveDays,status:projectedStatus,todayStatus:statusNow,trend:healthTrendArrow(statusNow,projectedStatus),incomingPO};
+}
+
+function marketProjection(market,periodMonths){
+  const invRows=state.inventory.filter(i=>i.market===market);
+  return projectStockFor(invRows,periodMonths,(p,rows)=>!p.sku||rows.some(i=>i.sku===p.sku));
+}
+
+// Per-SKU projection, used by the dashboard KPI row so the headline numbers
+// move together with the Inventory Health by Market panel instead of only
+// reflecting today regardless of the period selected.
+function skuProjection(invRow,periodMonths){
+  return projectStockFor([invRow],periodMonths,(p)=>!p.sku||p.sku===invRow.sku);
+}
+
+/* Animates a KPI tile's displayed number from 0 (or its previous value) up
+   to the target, formatting each frame with the same suffix/prefix as the
+   final string. This is the dashboard's signature motion moment. */
+const _activeCountUps={};
+function animateCountUp(elId,targetNum,formatFn,duration=500){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  // Cancel any in-flight animation already running on this element so two
+  // overlapping loops can't race and leave a stale value on screen.
+  if(_activeCountUps[elId]) cancelAnimationFrame(_activeCountUps[elId]);
+
+  if(typeof requestAnimationFrame==='undefined'){
+    el.textContent=formatFn(targetNum);
+    return;
+  }
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    el.textContent=formatFn(targetNum);
+    return;
+  }
+  // Animate from whatever numeric value is currently on screen, not from 0,
+  // so re-triggering (e.g. clicking 3mo then 6mo quickly) looks like a
+  // smooth transition rather than restarting from zero every time.
+  const currentText=el.textContent||'';
+  const parsedCurrent=parseFloat(currentText.replace(/[^0-9.\-]/g,''));
+  const from=isFinite(parsedCurrent)?parsedCurrent:0;
+  const start=performance.now();
+  function frame(now){
+    const t=Math.min(1,(now-start)/duration);
+    const eased=1-Math.pow(1-t,3); // ease-out cubic
+    const current=from+(targetNum-from)*eased;
+    el.textContent=formatFn(current);
+    if(t<1){
+      _activeCountUps[elId]=requestAnimationFrame(frame);
+    } else {
+      el.textContent=formatFn(targetNum);
+      delete _activeCountUps[elId];
+    }
+  }
+  _activeCountUps[elId]=requestAnimationFrame(frame);
 }
 
 function renderDashboard(){
   const inv=state.inventory;
   if(!inv.length){
-    ['d-total-stock','d-atrisk','d-excess','d-coverage','d-open-pos','d-best-model','d-accuracy','d-otd'].forEach(id=>{
+    ['d-total-stock','d-atrisk','d-coverage','d-po-value','d-best-model','d-accuracy','d-otd','d-npi-count'].forEach(id=>{
       const el=document.getElementById(id);if(el)el.textContent='—';
     });
-    document.getElementById('d-accuracy-sub').textContent='—';document.getElementById('d-accuracy-sub').className='kpi-sub kpi-neutral';
-    document.getElementById('d-otd-sub').textContent='—';document.getElementById('d-otd-sub').className='kpi-sub kpi-neutral';
-    ['dash-chart','dash-market-health','dash-sku-breakdown','dash-supplier-perf','dash-alerts','dash-inv-table'].forEach(id=>{
+    ['dash-chart','dash-market-health','dash-sku-breakdown','dash-plc-mix','dash-alerts','dash-inv-table'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.innerHTML='<div class="empty-state"><div class="empty-state-icon">📊</div>Load data to see dashboard</div>';
     });
     return;
   }
-  const total=inv.reduce((s,i)=>s+i.stock,0);
-  const atRisk=inv.filter(i=>i.status==='Critical'||i.status==='Low').length;
-  const excess=inv.filter(i=>i.status==='Excess').length;
-  const avgDays=inv.length?Math.round(inv.reduce((s,i)=>s+i.days,0)/inv.length):0;
-  const totalPOUnits=state.pos.reduce((s,p)=>s+p.units,0);
-  document.getElementById('d-total-stock').textContent=total.toLocaleString();
-  document.getElementById('d-atrisk').textContent=atRisk;
-  document.getElementById('d-excess').textContent=excess;
-  document.getElementById('d-coverage').textContent=avgDays+' days';
-  document.getElementById('d-open-pos').textContent=state.pos.length;
-  document.getElementById('d-accuracy').textContent='87.4%';
-  document.getElementById('d-accuracy-sub').textContent='▲ 2.1% vs last month';
-  document.getElementById('d-accuracy-sub').className='kpi-sub kpi-up';
-  document.getElementById('d-otd').textContent='91.2%';
-  document.getElementById('d-otd-sub').textContent='▼ 1.4% vs target';
-  document.getElementById('d-otd-sub').className='kpi-sub kpi-down';
-  document.getElementById('d-po-sub').textContent=totalPOUnits.toLocaleString()+' units on order';
+  // These two move with the period selector — they're projections of future
+  // inventory position, same model as the Inventory Health by Market panel.
+  const skuProjections=inv.map(i=>({inv:i,proj:skuProjection(i,dashboardHealthPeriod)}));
+  const atRisk=skuProjections.filter(({proj})=>proj.status==='Critical'||proj.status==='Low').length;
+  const avgDays=skuProjections.length?Math.round(skuProjections.reduce((s,{proj})=>s+proj.days,0)/skuProjections.length):0;
 
-  const months=['Apr','May','Jun','Jul','Aug','Sep'];
-  const keys=['apr','may','jun','jul','aug','sep'];
-  const demand=state.forecast.length?keys.map(k=>state.forecast.reduce((s,r)=>s+(r[k]||0),0)):[6200,7100,6800,7600,8200,8800];
+  // These stay as "today" snapshots — projecting forecast accuracy, OTD
+  // history, or PO totals forward doesn't have a meaningful definition the
+  // way projected stock position does, so they don't change with the period.
+  const totalPOValue=state.pos.reduce((s,p)=>{
+    const sku=state.skuMaster.find(m=>m.sku===p.sku);
+    return s+(p.units*(sku?sku.cost:20));
+  },0);
+  const npiCount=state.skuMaster.filter(s=>s.plc==='Phase-In').length;
+
+  let bestOverall={name:'—',mape:Infinity};
+  state.skuMaster.forEach(s=>{
+    const hist=(state.demandHistory[s.sku]||[]).map(h=>h.value);
+    if(hist.length<4) return;
+    const r=computeSMA(hist,4);
+    const f=r.fitted.filter(v=>v!=null);
+    const a=hist.slice(-f.length);
+    const m=mape(a,f);
+    if(isFinite(m)&&m<bestOverall.mape) bestOverall={name:'Moving Average',mape:m};
+  });
+  const avgMape=bestOverall.mape!==Infinity?bestOverall.mape:12;
+  const accuracy=Math.max(0,100-avgMape);
+
+  animateCountUp('d-accuracy',accuracy,v=>v.toFixed(1)+'%');
+  document.getElementById('d-accuracy-sub').textContent='Avg across SKUs';
+  document.getElementById('d-accuracy-sub').className='kpi-sub kpi-neutral';
+  animateCountUp('d-coverage',avgDays,v=>Math.round(v)+' days');
+  const coverageSubEl=document.getElementById('d-coverage-sub');
+  if(coverageSubEl) coverageSubEl.textContent=dashboardHealthPeriod?`Projected · ${dashboardHealthPeriod}mo`:'Target 30-45 days';
+  animateCountUp('d-atrisk',atRisk,v=>Math.round(v));
+  const atriskSubEl=document.getElementById('d-atrisk-sub');
+  if(atriskSubEl) atriskSubEl.textContent=dashboardHealthPeriod?`Critical + Low · in ${dashboardHealthPeriod}mo`:'Critical + Low';
+  const otd=state.suppliers.length?Math.round(mean(state.suppliers.map(s=>s.otd))):0;
+  animateCountUp('d-otd',otd,v=>Math.round(v)+'%');
+  document.getElementById('d-otd-sub').textContent=otd>=90?'On target':'Below target';
+  document.getElementById('d-otd-sub').className=otd>=90?'kpi-sub kpi-up':'kpi-sub kpi-down';
+  animateCountUp('d-po-value',totalPOValue,v=>'$'+Math.round(v).toLocaleString());
+  document.getElementById('d-po-sub').textContent=state.pos.length+' open POs';
+  animateCountUp('d-npi-count',npiCount,v=>Math.round(v));
+
+  const months=[];
+  const demand=[];
+  // Aggregate last 6 months across all SKU demand history
+  const allPeriods=new Set();
+  Object.values(state.demandHistory).forEach(h=>h.forEach(p=>allPeriods.add(p.period)));
+  const sortedPeriods=[...allPeriods].filter(Boolean).sort().slice(-6);
+  const periodsToUse=sortedPeriods.length?sortedPeriods:['M1','M2','M3','M4','M5','M6'];
+  periodsToUse.forEach(p=>{
+    months.push(p.includes('-')?p.split('-')[1]:p);
+    let total=0;
+    Object.values(state.demandHistory).forEach(h=>{
+      const row=h.find(x=>x.period===p);
+      if(row) total+=row.value;
+    });
+    demand.push(total);
+  });
   const supply=demand.map((d,i)=>Math.round(d*(0.88+Math.sin(i)*0.06)));
   const maxV=Math.max(...demand,...supply,1);
   document.getElementById('dash-chart').innerHTML=months.map((m,i)=>{
@@ -1899,10 +2222,16 @@ function renderDashboard(){
     const {bc,label}=statusStyle(p.status);
     const col=barColor(p.status);
     const insight=projectionSummary(p.todayStatus,p.status,dashboardHealthPeriod);
+    // When projecting forward and the status will differ from today, prefix
+    // the badge with an arrow so it reads as "heading toward X" rather than
+    // "is X right now" — avoids the badge appearing to contradict the
+    // insight text below it.
+    const isProjectedChange=dashboardHealthPeriod>0 && p.status!==p.todayStatus;
+    const badgeLabel=isProjectedChange?`→ ${label}`:label;
     return `<div class="market-health-row">
       <div class="market-health-meta">
-        <div class="market-health-status"><span class="prog-label" style="min-width:auto">${m}</span><span class="badge ${bc}">${label}</span><span class="market-health-trend">${p.trend}</span></div>
-        <div class="prog-pct" style="color:${col}">${Math.round(p.days)}d</div>
+        <div class="market-health-status"><span class="prog-label" style="min-width:auto">${m}</span><span class="badge ${bc}" title="${dashboardHealthPeriod>0?`Projected status in ${dashboardHealthPeriod} months`:'Current status'}">${badgeLabel}</span><span class="market-health-trend">${p.trend}</span></div>
+        <div class="prog-pct" style="color:${col}">${Math.round(p.days)}d${dashboardHealthPeriod>0?' <span style="font-size:9px;color:var(--text3)">proj.</span>':''}</div>
       </div>
       <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
       <div class="market-health-insight">${insight}${dashboardHealthPeriod?` · PO +${Math.round(p.incomingPO).toLocaleString()}u`:''}</div>
@@ -1911,7 +2240,6 @@ function renderDashboard(){
   const marketHealthEl=document.getElementById('dash-market-health');
   marketHealthEl.classList.remove('market-health-anim');
   marketHealthEl.innerHTML=healthRows.join('');
-  // Force reflow so browser recalculates styles before re-adding animation class; this reliably restarts the transition on period switch.
   void marketHealthEl.offsetWidth;
   marketHealthEl.classList.add('market-health-anim');
   const confEl=document.getElementById('dash-market-health-confidence');
@@ -1919,38 +2247,37 @@ function renderDashboard(){
 
   const statuses=['Healthy','Low','Critical','Excess'];
   const sColors=['var(--teal)','var(--amber)','var(--red)','var(--blue)'];
-  const sCounts=statuses.map(s=>inv.filter(i=>i.status===s).length);
+  const sCounts=statuses.map(s=>inv.filter(i=>statusFromDays(daysCoverFor(i))===s).length);
   const maxS=Math.max(...sCounts,1);
   document.getElementById('dash-sku-breakdown').innerHTML=statuses.map((s,i)=>`<div class="prog-row"><div class="prog-label">${s}</div><div class="prog-bg"><div class="prog-fill" style="width:${Math.round((sCounts[i]/maxS)*100)}%;background:${sColors[i]}"></div></div><div class="prog-pct" style="color:${sColors[i]}">${sCounts[i]}</div></div>`).join('');
 
-  document.getElementById('dash-supplier-perf').innerHTML=state.suppliers.map(s=>{
-    const col=s.otd>=90?'var(--teal)':s.otd>=80?'var(--amber)':'var(--red)';
-    return `<div class="prog-row"><div class="prog-label">${s.id}</div><div class="prog-bg"><div class="prog-fill" style="width:${s.otd}%;background:${col}"></div></div><div class="prog-pct" style="color:${col}">${s.otd}%</div></div>`;
-  }).join('');
+  const plcStages=['Phase-In','Growth','Mature','Phase-Out'];
+  const plcCounts=plcStages.map(s=>state.skuMaster.filter(sk=>sk.plc===s).length);
+  const maxP=Math.max(...plcCounts,1);
+  document.getElementById('dash-plc-mix').innerHTML=plcStages.map((s,i)=>`<div class="prog-row"><div class="prog-label">${s}</div><div class="prog-bg"><div class="prog-fill" style="width:${Math.round((plcCounts[i]/maxP)*100)}%;background:${plcColor(s)}"></div></div><div class="prog-pct" style="color:${plcColor(s)}">${plcCounts[i]}</div></div>`).join('');
 
-  const critical=inv.filter(i=>i.status==='Critical');
+  const critical=inv.filter(i=>statusFromDays(daysCoverFor(i))==='Critical');
   const delayed=state.pos.filter(p=>p.status==='Delayed');
   let alerts=[];
-  critical.forEach(i=>alerts.push({icon:'⚠',bg:'rgba(248,113,113,.12)',text:`Stockout: ${i.sku} (${i.market}) — ${i.days}d left`,bc:'b-red',label:'Critical'}));
+  critical.forEach(i=>alerts.push({icon:'⚠',bg:'rgba(248,113,113,.12)',text:`Stockout risk: ${i.sku} (${i.market}) — ${daysCoverFor(i)}d left`,bc:'b-red',label:'Critical'}));
   delayed.forEach(p=>alerts.push({icon:'↗',bg:'rgba(245,158,11,.12)',text:`Delayed PO: ${p.po}`,bc:'b-amber',label:'Delayed'}));
   if(!alerts.length) alerts.push({icon:'✓',bg:'rgba(34,211,164,.1)',text:'No critical alerts',bc:'b-teal',label:'Clear'});
   document.getElementById('alert-count').textContent=critical.length+delayed.length;
   document.getElementById('dash-alerts').innerHTML=alerts.slice(0,4).map(a=>`<div class="risk-item"><div class="risk-icon" style="background:${a.bg}">${a.icon}</div><div class="risk-body"><div class="risk-title" style="font-size:11px">${a.text}</div></div><span class="badge ${a.bc}">${a.label}</span></div>`).join('');
 
   document.getElementById('dash-inv-table').innerHTML=inv.map(i=>{
-    const {bc,label}=statusStyle(i.status);
-    const pct=Math.min(100,Math.round((i.days/60)*100));
+    const days=daysCoverFor(i);
+    const status=statusFromDays(days);
+    const {bc,label}=statusStyle(status);
+    const pct=Math.min(100,Math.round((days/60)*100));
     const weekly=Math.max(1,i.weekly||50);
-    const sigma=weekly*0.2;
-    const cvVal=((sigma/weekly)*100).toFixed(0);
-    // FIX #4: proper stockout probability
-    const stockoutP=stockoutProbability(i.days||14,weekly);
-    const cvBadge=parseFloat(cvVal)>30?'b-red':parseFloat(cvVal)>20?'b-amber':parseFloat(cvVal)>10?'b-blue':'b-green';
+    const stockoutP=stockoutProbability(days||14,weekly);
+    const sku=state.skuMaster.find(s=>s.sku===i.sku);
     return `<tr>
       <td class="mono">${i.sku}</td><td>${i.name}</td><td>${i.market}</td>
-      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(i.status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
-      <td class="mono">${i.days}</td>
-      <td><span class="badge ${cvBadge}">${cvVal}%</span></td>
+      <td><span class="badge ${plcBadgeClass(sku?sku.plc:'Mature')}">${sku?sku.plc:'—'}</span></td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
+      <td class="mono">${days}</td>
       <td><span class="badge ${stockoutP>50?'b-red':stockoutP>20?'b-amber':'b-green'}">${stockoutP}%</span></td>
       <td><span class="badge ${bc}">${label}</span></td>
     </tr>`;
@@ -1968,8 +2295,10 @@ function setFilter(f,btn){
 function renderInventory(){
   const mkt=(document.getElementById('inv-market-filter')||{}).value||'all';
   const rows=state.inventory.filter(i=>{
+    const days=daysCoverFor(i);
+    const status=statusFromDays(days);
     const mMatch=mkt==='all'||i.market.toLowerCase().includes(mkt);
-    const fMatch=invFilter==='all'||i.status.toLowerCase()===invFilter;
+    const fMatch=invFilter==='all'||status.toLowerCase()===invFilter;
     return mMatch&&fMatch;
   });
   const body=document.getElementById('inv-body');
@@ -1978,21 +2307,22 @@ function renderInventory(){
     return;
   }
   body.innerHTML=rows.map(i=>{
-    const {bc,label}=statusStyle(i.status);
-    const pct=Math.min(100,Math.round((i.days/60)*100));
+    const days=daysCoverFor(i);
+    const status=statusFromDays(days);
+    const {bc,label}=statusStyle(status);
+    const pct=Math.min(100,Math.round((days/60)*100));
     const weekly=Math.max(1,i.weekly||50);
     const annual=weekly*52;
     const EOQ=Math.max(1,Math.round(Math.sqrt(2*annual*200/6)));
     const sigma=weekly*0.2;
-    const SS=Math.max(0,Math.round(1.65*Math.sqrt(Math.max(1,i.days||14))*sigma));
+    const SS=Math.max(0,Math.round(1.65*Math.sqrt(Math.max(1,days||14))*sigma));
     const cvVal=(sigma/weekly*100).toFixed(1);
     const cvBadge=parseFloat(cvVal)>30?'b-red':parseFloat(cvVal)>20?'b-amber':parseFloat(cvVal)>10?'b-blue':'b-green';
-    // FIX #4: proper stockout probability
-    const stockoutP=stockoutProbability(i.days||14,weekly);
+    const stockoutP=stockoutProbability(days||14,weekly);
     return `<tr>
       <td class="mono">${i.sku}</td><td>${i.name}</td><td>${i.market}</td>
-      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(i.status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
-      <td class="mono">${i.days}</td><td class="mono">${i.rop.toLocaleString()}</td><td class="mono">${weekly}/wk</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor(status)}"></div></div><div class="bar-num">${i.stock.toLocaleString()}</div></div></td>
+      <td class="mono">${days}</td><td class="mono">${(i.rop||0).toLocaleString()}</td><td class="mono">${weekly}/wk</td>
       <td class="mono" style="color:var(--teal)">${EOQ.toLocaleString()}</td>
       <td class="mono" style="color:var(--blue)">${SS.toLocaleString()}</td>
       <td><span class="badge ${cvBadge}">${cvVal}%</span></td>
@@ -2024,124 +2354,53 @@ function renderTimeline(){
   ];
   document.getElementById('prod-tl').innerHTML=items.map(t=>`<div class="tl-item"><div class="tl-date">${t.date}</div><div class="tl-body"><div class="tl-title">${t.title}</div><div class="tl-sub">${t.sub}</div></div></div>`).join('');
 }
+
 function renderRisks(){
-  const risks=[
-    {icon:'⚠',bg:'rgba(248,113,113,.12)',title:'Stockout — SKU-2041 LATAM (5 days remaining)',desc:'Demand exceeded forecast by 34%. SARIMA model confirms upward trend. Expedite recommended.',bc:'b-red',label:'Critical'},
-    {icon:'⚠',bg:'rgba(248,113,113,.12)',title:'Supplier EMEA-12 — delayed PO-88399',desc:'Delivery delayed 3 days. Safety stock buffer covers gap by 2 days only.',bc:'b-red',label:'Critical'},
-    {icon:'↗',bg:'rgba(245,158,11,.12)',title:'APAC demand revision +12% — EOQ needs recalculation',desc:'Current EOQ based on old demand baseline. Recommend re-running optimization.',bc:'b-amber',label:'Moderate'},
-    {icon:'↗',bg:'rgba(245,158,11,.12)',title:'Excess inventory — SKU-0994 North America (72 days)',desc:'CV is low (stable demand). Recommend reducing EOQ or promotional push.',bc:'b-amber',label:'Moderate'},
-    {icon:'ℹ',bg:'rgba(79,142,247,.1)',title:'Seasonal uplift expected — EMEA June (+18%)',desc:'Holt-Winters model confirms seasonal peak. Safety stock should be increased by 15%.',bc:'b-blue',label:'Monitor'},
-    {icon:'ℹ',bg:'rgba(79,142,247,.1)',title:'High CV detected — 3 SKUs show demand variability >30%',desc:'High coefficient of variation indicates unstable demand. SARIMA recommended for these SKUs.',bc:'b-blue',label:'Monitor'},
-  ];
-  document.getElementById('risk-list').innerHTML=risks.map(r=>`<div class="risk-item"><div class="risk-icon" style="background:${r.bg}">${r.icon}</div><div class="risk-body"><div class="risk-title">${r.title}</div><div class="risk-desc">${r.desc}</div></div><div class="risk-right"><span class="badge ${r.bc}">${r.label}</span></div></div>`).join('');
-}
-
-/* FIX #10: Forecast with SVG line chart */
-function runForecast(){
-  const base=Math.max(1,parseInt(document.getElementById('fc-base').value)||1400);
-  const growth=parseFloat(document.getElementById('fc-growth').value)||8;
-  const seasonal=parseFloat(document.getElementById('fc-seasonal').value)||1;
-  const promo=parseFloat(document.getElementById('fc-promo').value)||0;
-  const bias=parseFloat(document.getElementById('fc-bias').value)||0;
-  const mkt=document.getElementById('fc-market').value;
-  const cat=document.getElementById('fc-cat').value;
-  const confSel=document.getElementById('fc-conf').value;
-  const confZ={'90%':1.645,'80%':1.282,'70%':1.036}[confSel]||1.645;
-  const confSpread=confZ*0.08;
-
-  document.getElementById('fc-title').textContent=`13-Week Forecast — ${mkt}, ${cat}`;
-  document.getElementById('fc-chart-title').textContent=`${mkt} — ${cat} Forecast Chart`;
-
-  const fcData=[];
-  let prev=0;
-  const bodyRows=Array.from({length:13},(_,wi)=>{
-    const w=wi+1;
-    const adj=Math.round(base*(1+(growth/100)*(w/52))*seasonal*(1+(promo/100))*(1+(bias/100)));
-    const low=Math.round(adj*(1-confSpread*(1+wi*0.04)));
-    const high=Math.round(adj*(1+confSpread*(1+wi*0.04)));
-    const conf=w<=4?'90%':w<=8?'80%':'70%';
-    const chg=prev?((adj-prev)/prev*100).toFixed(1)+'%':'—';
-    const chgStyle=prev&&adj>prev?'color:var(--teal)':prev&&adj<prev?'color:var(--red)':'';
-    prev=adj;
-    fcData.push({adj,low,high});
-    return `<tr><td>W${w}</td><td>${base.toLocaleString()}</td><td style="color:var(--teal);font-weight:600">${adj.toLocaleString()}</td><td style="color:var(--text3)">${low.toLocaleString()}</td><td style="color:var(--text3)">${high.toLocaleString()}</td><td><span class="badge b-blue">${conf}</span></td><td style="${chgStyle}">${chg}</td></tr>`;
+  const inv=state.inventory;
+  const risks=[];
+  inv.forEach(i=>{
+    const days=daysCoverFor(i);
+    const status=statusFromDays(days);
+    if(status==='Critical') risks.push({icon:'⚠',bg:'rgba(248,113,113,.12)',title:`Stockout risk — ${i.sku} ${i.market} (${days}d remaining)`,desc:`Stock on hand covers only ${days} days against ${i.weekly}/wk demand. Expedite or pull forward the next PO.`,bc:'b-red',label:'Critical'});
   });
-  document.getElementById('fc-body').innerHTML=bodyRows.join('');
+  state.pos.filter(p=>p.status==='Delayed').forEach(p=>{
+    risks.push({icon:'⚠',bg:'rgba(248,113,113,.12)',title:`Delayed PO — ${p.po} (${p.supplier})`,desc:`${p.units.toLocaleString()} units of ${p.sku} delayed. Check downstream coverage impact.`,bc:'b-red',label:'Critical'});
+  });
+  inv.forEach(i=>{
+    const days=daysCoverFor(i);
+    if(statusFromDays(days)==='Excess') risks.push({icon:'↗',bg:'rgba(245,158,11,.12)',title:`Excess inventory — ${i.sku} ${i.market} (${days}d)`,desc:'Consider reducing next order quantity or a promotional push.',bc:'b-amber',label:'Moderate'});
+  });
+  state.suppliers.filter(s=>s.otd<80).forEach(s=>{
+    risks.push({icon:'↗',bg:'rgba(245,158,11,.12)',title:`Supplier OTD below target — ${s.id} (${s.otd}%)`,desc:`${s.region} supplier tracking below 80% on-time delivery. Status: ${s.status}.`,bc:'b-amber',label:'Moderate'});
+  });
+  state.skuMaster.filter(s=>s.plc==='Phase-In').forEach(s=>{
+    risks.push({icon:'ℹ',bg:'rgba(79,142,247,.1)',title:`NPI tracking — ${s.sku} ${s.name}`,desc:'New launch — monitor Bass Diffusion fit weekly until enough history builds for statistical forecasting.',bc:'b-blue',label:'Monitor'});
+  });
 
-  // Render forecast SVG chart
-  renderForecastChart(fcData);
-}
+  document.getElementById('risk-critical-count').textContent=risks.filter(r=>r.label==='Critical').length;
+  document.getElementById('risk-moderate-count').textContent=risks.filter(r=>r.label==='Moderate').length;
+  document.getElementById('risk-monitor-count').textContent=risks.filter(r=>r.label==='Monitor').length;
 
-function renderForecastChart(fcData){
-  const svg=document.getElementById('fc-chart');
-  if(!svg||!fcData.length) return;
-  const W=600,H=140,pad={t:10,r:10,b:25,l:50};
-  const allVals=[...fcData.map(d=>d.adj),...fcData.map(d=>d.low),...fcData.map(d=>d.high)];
-  const minV=Math.min(...allVals)*0.9;
-  const maxV=Math.max(...allVals)*1.08;
-  const range=maxV-minV||1;
-  const n=fcData.length;
-  const sx=i=>pad.l+(i/(n-1))*(W-pad.l-pad.r);
-  const sy=v=>H-pad.b-((v-minV)/range)*(H-pad.t-pad.b);
+  const dqFlags=detectOutliers();
+  document.getElementById('risk-dq-count').textContent=dqFlags.length;
 
-  const gridLines=Array.from({length:4},(_,i)=>{
-    const v=minV+(maxV-minV)*(i/3);
-    const y=sy(v);
-    const label=v>=1000?(Math.round(v/100)/10)+'k':Math.round(v);
-    return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="var(--border)" stroke-width="0.5"/>
-            <text x="${pad.l-4}" y="${y+3}" fill="var(--text3)" font-size="9" font-family="DM Mono,monospace" text-anchor="end">${label}</text>`;
-  }).join('');
+  document.getElementById('risk-list').innerHTML=risks.length
+    ? risks.map(r=>`<div class="risk-item"><div class="risk-icon" style="background:${r.bg}">${r.icon}</div><div class="risk-body"><div class="risk-title">${r.title}</div><div class="risk-desc">${r.desc}</div></div><div class="risk-right"><span class="badge ${r.bc}">${r.label}</span></div></div>`).join('')
+    : '<div class="empty-state">No active risks</div>';
 
-  // Confidence band path
-  const bandTop=fcData.map((d,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(d.high)}`).join(' ');
-  const bandBot=[...fcData].reverse().map((d,i)=>`${i===0?'M':'L'} ${sx(n-1-i)} ${sy(d.low)}`).join(' ');
-  const bandPath=`${bandTop} ${bandBot} Z`;
-
-  const linePath=fcData.map((d,i)=>`${i===0?'M':'L'} ${sx(i)} ${sy(d.adj)}`).join(' ');
-  const dots=fcData.map((d,i)=>`<circle cx="${sx(i)}" cy="${sy(d.adj)}" r="2.5" fill="var(--teal)"/>`).join('');
-  const xLabels=fcData.map((d,i)=>`<text x="${sx(i)}" y="${H-8}" fill="var(--text3)" font-size="8" font-family="DM Mono,monospace" text-anchor="middle">W${i+1}</text>`).join('');
-
-  svg.innerHTML=`
-    ${gridLines}
-    <path d="${bandPath}" fill="rgba(79,142,247,0.1)"/>
-    <path d="${linePath}" stroke="var(--teal)" stroke-width="2" fill="none"/>
-    ${dots}
-    ${xLabels}
-  `;
-}
-
-function renderFcExcel(){
-  const body=document.getElementById('fc-excel-body');
-  if(!state.forecast.length){
-    body.innerHTML='<tr><td colspan="8" class="empty-state">Upload Excel to see imported forecast</td></tr>';
-    return;
-  }
-  const total={apr:0,may:0,jun:0,jul:0,aug:0,sep:0};
-  const rows=state.forecast.map(r=>{
-    const tot=r.apr+r.may+r.jun+r.jul+r.aug+r.sep;
-    ['apr','may','jun','jul','aug','sep'].forEach(k=>total[k]+=r[k]||0);
-    return `<tr><td>${r.market}</td>${['apr','may','jun','jul','aug','sep'].map(k=>`<td class="mono">${(r[k]||0).toLocaleString()}</td>`).join('')}<td class="mono" style="font-weight:600;color:var(--teal)">${tot.toLocaleString()}</td></tr>`;
-  }).join('');
-  const grand=['apr','may','jun','jul','aug','sep'].reduce((s,k)=>s+total[k],0);
-  body.innerHTML=rows+`<tr style="background:var(--bg3)"><td style="font-weight:600">TOTAL</td>${['apr','may','jun','jul','aug','sep'].map(k=>`<td class="mono" style="font-weight:600">${total[k].toLocaleString()}</td>`).join('')}<td class="mono" style="font-weight:600;color:var(--teal)">${grand.toLocaleString()}</td></tr>`;
+  document.getElementById('dq-list').innerHTML=dqFlags.length
+    ? dqFlags.map(f=>`<div class="dq-row"><div><div class="dq-flag">${f.sku} — ${f.period}: <strong>${f.value.toLocaleString()}</strong> units${f.note?` <span style="color:var(--text3)">(${f.note})</span>`:''}</div><div class="dq-flag-sub">${Math.abs(f.z)>1?`${f.z} standard deviations from this SKU's average`:''}</div></div><span class="badge b-purple">z=${f.z}</span></div>`).join('')
+    : '<div class="empty-state">No outliers detected</div>';
 }
 
 /* ── INIT ── */
-['fc-base','fc-growth','fc-seasonal','fc-promo','fc-bias'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',runForecast);
-});
-['fc-market','fc-cat','fc-horizon','fc-conf'].forEach(id=>{
-  document.getElementById(id).addEventListener('change',runForecast);
-});
-
-// Initialise with blank state (no demo preloaded)
 (function init(){
-  state={inventory:[],forecast:[],pos:[],suppliers:[]};
+  state={skuMaster:[],inventory:[],pos:[],suppliers:[],hierarchy:[],demandHistory:{}};
   document.getElementById('data-status').textContent='NO DATA';
   document.getElementById('data-status').className='pill pill-amber';
   renderAll();
-  runForecast(); // forecast builder always works independently
 })();
+
 </script>
 </body>
 </html>
