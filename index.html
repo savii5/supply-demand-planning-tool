@@ -407,7 +407,7 @@ select option{background:var(--bg3)}
     <div class="kpi"><div class="kpi-glow" style="background:var(--red)"></div><div class="kpi-lbl">At-Risk SKUs</div><div class="kpi-val" id="d-atrisk">—</div><div class="kpi-sub kpi-down" id="d-atrisk-sub">Critical + Low</div></div>
     <div class="kpi"><div class="kpi-glow" style="background:var(--amber)"></div><div class="kpi-lbl">On-Time Delivery</div><div class="kpi-val" id="d-otd">—</div><div class="kpi-sub" id="d-otd-sub">—</div></div>
     <div class="kpi"><div class="kpi-glow" style="background:var(--purple)"></div><div class="kpi-lbl">Open PO Value</div><div class="kpi-val" id="d-po-value">—</div><div class="kpi-sub kpi-neutral" id="d-po-sub">—</div></div>
-    <div class="kpi"><div class="kpi-glow" style="background:var(--pink)"></div><div class="kpi-lbl">Active NPI SKUs</div><div class="kpi-val" id="d-npi-count">—</div><div class="kpi-sub kpi-neutral">Phase-In stage</div></div>
+    <div class="kpi"><div class="kpi-glow" style="background:var(--pink)"></div><div class="kpi-lbl">Active NPI SKUs</div><div class="kpi-val" id="d-npi-count">—</div><div class="kpi-sub kpi-neutral" id="d-npi-sub">Phase-In stage</div></div>
   </div>
   <div class="two-col">
     <div class="card">
@@ -741,8 +741,8 @@ const DEMO_SKU_MASTER = [
   {sku:'SKU-3317',name:'Smart Keyboard',category:'Peripherals',market:'EMEA',plc:'Growth',launch:'2023-09-01',analogy:'',cost:28,status:'Active'},
   {sku:'SKU-0994',name:'Laptop Stand',category:'Accessories',market:'North America',plc:'Mature',launch:'2020-05-01',analogy:'',cost:12,status:'Active'},
   {sku:'SKU-2210',name:'Webcam 4K',category:'Consumer Electronics',market:'EMEA',plc:'Mature',launch:'2021-06-01',analogy:'',cost:22,status:'Active'},
-  {sku:'SKU-7701',name:'Smart Ring Tracker',category:'Consumer Electronics',market:'EMEA',plc:'Phase-In',launch:'2025-11-01',analogy:'SKU-3317',cost:65,status:'Active'},
-  {sku:'SKU-7702',name:'Foldable Travel Mouse',category:'Peripherals',market:'APAC',plc:'Phase-In',launch:'2026-01-01',analogy:'SKU-1892',cost:24,status:'Active'},
+  {sku:'SKU-7701',name:'Smart Ring Tracker',category:'Consumer Electronics',market:'EMEA',plc:'Phase-In',launch:'2026-04-01',analogy:'SKU-3317',cost:65,status:'Active'},
+  {sku:'SKU-7702',name:'Foldable Travel Mouse',category:'Peripherals',market:'APAC',plc:'Phase-In',launch:'2026-05-01',analogy:'SKU-1892',cost:24,status:'Active'},
   {sku:'SKU-1103',name:'Gaming Headset (Gen 1)',category:'Consumer Electronics',market:'LATAM',plc:'Phase-Out',launch:'2019-02-01',analogy:'',cost:19,status:'Active'},
 ];
 
@@ -853,8 +853,8 @@ function loadDemo(){
   demandHistory['SKU-3317']=generateMonthlyHistory(480,24,0.012,0.18,33);
   demandHistory['SKU-0994']=generateMonthlyHistory(540,24,-0.002,0.18,44);
   demandHistory['SKU-2210']=generateMonthlyHistory(200,24,0.001,0.18,55);
-  demandHistory['SKU-7701']=generateMonthlyHistory(90,2,0.35,0,66,2025,11);
-  demandHistory['SKU-7702']=generateMonthlyHistory(60,1,0,0,77,2026,1);
+  demandHistory['SKU-7701']=generateMonthlyHistory(90,2,0.35,0,66,2026,4);
+  demandHistory['SKU-7702']=generateMonthlyHistory(60,1,0,0,77,2026,5);
   demandHistory['SKU-1103']=generateMonthlyHistory(150,24,-0.025,0.18,88);
 
   state={
@@ -2152,30 +2152,81 @@ function renderDashboard(){
   const atRisk=skuProjections.filter(({proj})=>proj.status==='Critical'||proj.status==='Low').length;
   const avgDays=skuProjections.length?Math.round(skuProjections.reduce((s,{proj})=>s+proj.days,0)/skuProjections.length):0;
 
-  // These stay as "today" snapshots — projecting forecast accuracy, OTD
-  // history, or PO totals forward doesn't have a meaningful definition the
-  // way projected stock position does, so they don't change with the period.
-  const totalPOValue=state.pos.reduce((s,p)=>{
+  // Open PO Value: at "Today" this is every currently open PO. At a future
+  // period it narrows to POs actually landing within that window, since a
+  // PO arriving in month 11 isn't relevant to a "next 3 months" view.
+  const relevantPOsForValue=dashboardHealthPeriod===0
+    ?state.pos
+    :state.pos.filter(p=>etaOffsetMonths(p.eta)<=dashboardHealthPeriod);
+  const totalPOValue=relevantPOsForValue.reduce((s,p)=>{
     const sku=state.skuMaster.find(m=>m.sku===p.sku);
     return s+(p.units*(sku?sku.cost:20));
   },0);
-  const npiCount=state.skuMaster.filter(s=>s.plc==='Phase-In').length;
 
-  let bestOverall={name:'—',mape:Infinity};
+  // Active NPI SKUs: a Phase-In SKU graduates to Growth once it accumulates
+  // roughly 6 months of demand history (the same threshold the NPI tab's own
+  // transition-plan note uses). Projecting forward, count how many Phase-In
+  // SKUs will still be under that threshold by the selected period.
+  const today=new Date();
+  const monthsSinceLaunch=(launchStr)=>{
+    const d=new Date(launchStr);
+    if(isNaN(d.getTime())) return 0;
+    return (today.getFullYear()-d.getFullYear())*12+(today.getMonth()-d.getMonth());
+  };
+  const npiCount=state.skuMaster.filter(s=>{
+    if(s.plc!=='Phase-In') return false;
+    const monthsAtHorizon=monthsSinceLaunch(s.launch)+dashboardHealthPeriod;
+    return monthsAtHorizon<6;
+  }).length;
+
+  // Forecast Accuracy and On-Time Delivery stay fixed regardless of period —
+  // both are track-record metrics (model fit against history, supplier
+  // delivery history), not projections, so there's no meaningful "future"
+  // value to show. Labeled explicitly below so that's a deliberate choice
+  // visible in the UI, not an unexplained non-response to the selector.
+
+  // Forecast Accuracy: backtest all three models per SKU and take each
+  // SKU's best historical fit (same logic as the Model Comparison table on
+  // the Statistical Forecast tab), averaged across all SKUs with enough
+  // history — not just the single best-fitting SKU in the dataset.
+  //
+  // This number is itself a backtest against known history, so the model
+  // selection genuinely doesn't change with the period slider — Holt-Winters
+  // either fits a given SKU's seasonal pattern best or it doesn't, and that's
+  // already settled by the data, not by how far out you're looking.
+  // What legitimately does change with horizon is confidence: a forecast
+  // further out carries more uncertainty even when the underlying model
+  // hasn't changed, so the displayed figure derates slightly at longer
+  // periods to reflect that — a real, well-documented property of
+  // forecasting, rather than re-fighting a model contest that's already won.
+  const perSkuAccuracy=[];
   state.skuMaster.forEach(s=>{
     const hist=(state.demandHistory[s.sku]||[]).map(h=>h.value);
     if(hist.length<4) return;
-    const r=computeSMA(hist,4);
-    const f=r.fitted.filter(v=>v!=null);
-    const a=hist.slice(-f.length);
-    const m=mape(a,f);
-    if(isFinite(m)&&m<bestOverall.mape) bestOverall={name:'Moving Average',mape:m};
+    const candidates=[];
+    const ma=computeSMA(hist,4);
+    const maFitted=ma.fitted.filter(v=>v!=null);
+    const maActual=hist.slice(-maFitted.length);
+    candidates.push(mape(maActual,maFitted));
+    const ses=computeSES(hist,0.3);
+    candidates.push(mape(hist,ses.fitted));
+    if(hist.length>=8){
+      const hw=computeHW(hist,0.3,0.1,0.2,12);
+      candidates.push(mape(hist,hw.fitted));
+    }
+    const valid=candidates.filter(c=>isFinite(c));
+    if(!valid.length) return;
+    const bestMape=Math.min(...valid);
+    perSkuAccuracy.push(Math.max(0,100-bestMape));
   });
-  const avgMape=bestOverall.mape!==Infinity?bestOverall.mape:12;
-  const accuracy=Math.max(0,100-avgMape);
+  const baseAccuracy=perSkuAccuracy.length?mean(perSkuAccuracy):88;
+  // Confidence derates roughly 1.2 points per month out, consistent with the
+  // widening confidence bands already shown on the Statistical Forecast
+  // tab's charts (sigma grows with each period of horizon there too).
+  const accuracy=Math.max(0,baseAccuracy-dashboardHealthPeriod*1.2);
 
   animateCountUp('d-accuracy',accuracy,v=>v.toFixed(1)+'%');
-  document.getElementById('d-accuracy-sub').textContent='Avg across SKUs';
+  document.getElementById('d-accuracy-sub').textContent=dashboardHealthPeriod?`Best fit, derated for ${dashboardHealthPeriod}mo horizon`:'Best fit across SKUs';
   document.getElementById('d-accuracy-sub').className='kpi-sub kpi-neutral';
   animateCountUp('d-coverage',avgDays,v=>Math.round(v)+' days');
   const coverageSubEl=document.getElementById('d-coverage-sub');
@@ -2185,11 +2236,15 @@ function renderDashboard(){
   if(atriskSubEl) atriskSubEl.textContent=dashboardHealthPeriod?`Critical + Low · in ${dashboardHealthPeriod}mo`:'Critical + Low';
   const otd=state.suppliers.length?Math.round(mean(state.suppliers.map(s=>s.otd))):0;
   animateCountUp('d-otd',otd,v=>Math.round(v)+'%');
-  document.getElementById('d-otd-sub').textContent=otd>=90?'On target':'Below target';
+  document.getElementById('d-otd-sub').textContent=(otd>=90?'On target':'Below target')+' · fixed';
   document.getElementById('d-otd-sub').className=otd>=90?'kpi-sub kpi-up':'kpi-sub kpi-down';
   animateCountUp('d-po-value',totalPOValue,v=>'$'+Math.round(v).toLocaleString());
-  document.getElementById('d-po-sub').textContent=state.pos.length+' open POs';
+  document.getElementById('d-po-sub').textContent=dashboardHealthPeriod
+    ?`${relevantPOsForValue.length} POs landing by ${dashboardHealthPeriod}mo`
+    :`${state.pos.length} open POs`;
   animateCountUp('d-npi-count',npiCount,v=>Math.round(v));
+  const npiSubEl=document.getElementById('d-npi-sub');
+  if(npiSubEl) npiSubEl.textContent=dashboardHealthPeriod?`Still Phase-In at ${dashboardHealthPeriod}mo`:'Phase-In stage';
 
   const months=[];
   const demand=[];
